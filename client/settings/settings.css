@@ -1,0 +1,26 @@
+#preference {
+  position: relative;
+  left: 30%;
+  color: black;
+  text-align: center;
+  background-color: #E7D19C;
+  border-color: black;
+  border-radius: 4px;
+  border-style: solid;
+  border-width: 3px;
+  display: inline-block;
+}
+
+.shared {
+  display: inline;
+}
+
+.selections {
+  display: inline;
+  list-style: none;
+}
+
+form {
+  position: relative;
+  margin: 0px 10px 5px 10px;
+}

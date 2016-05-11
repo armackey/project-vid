@@ -1,0 +1,34 @@
+<div id="preference">
+
+  <div id="gender" class="shared">
+    <p>Let's set your preferences</p>
+    <form action="" ng-submit="settingsCtrl.sendPref()">
+
+      <label>I identify as a.. </label>
+      <li class="selections" ng-repeat="identify in settingsCtrl.identifyAs">
+        {{identify.sex}}
+        <input type="radio" ng-model="settingsCtrl.me.gender" name="identity" value="{{identify.sex}}"  />
+      </li> <br>
+
+      <label>Seeking..</label>
+      <li class="selections" ng-repeat="meeting in settingsCtrl.hereToMeet">
+        {{meeting.sex}}
+        <input type="radio" ng-model="settingsCtrl.me.preferences.iWantToMeet" name="meeting" value="{{meeting.sex}}"  />
+      </li> <br>
+
+      <label> Between: </label>
+      <select name="gtAge" ng-model="settingsCtrl.me.preferences.gtAge" ng-options="age.age for age in settingsCtrl.ageRange" >
+      </select>
+
+      <label> and: </label>
+      <select name="ltAge" ng-model="settingsCtrl.me.preferences.ltAge" ng-options="age.age for age in settingsCtrl.ageRange">
+      </select> <br>
+
+      <label>My age is..</label>
+      <select name="myAge"  ng-model="settingsCtrl.me.myAge" ng-options="age.age for age in settingsCtrl.ageRange"  >
+      </select> <br>
+      <input type="submit" value="Fuck YESS!">
+    </form>
+  </div>
+
+</div>
