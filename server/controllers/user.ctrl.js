@@ -98,6 +98,7 @@ exports.getToken = function(req, res) {
     );
     
     token.identity = identity;
+    console.log('i am ' + token.identity);
     
     // Assign the generated identity to the token
     //grant the access token Twilio Video capabilities
@@ -137,10 +138,10 @@ exports.searchForMatch = function(req, res) {
           
           res.send({
             typeUser: 'i am aswering',
-            name: retrieved.name,
-            remoteSocketid: retrieved.socketid,
-            room: retrieved.room,
-            id: retrieved._id
+            name: user.name,
+            remoteSocketid: user.socketid,
+            room: user.room,
+            id: user._id
           });
         });
       return;
@@ -180,7 +181,6 @@ exports.searchForMatch = function(req, res) {
         
 
         function storeRoom(room) {
-          console.log(room);
           user.room = room;
           user.email = callerEmail;
           user.inCall = true;

@@ -48,16 +48,16 @@
         });
       });
 
-
       function clientConnected() {
         console.log('clientConnected');
         conToVidChat.searchForMatch().then(function(data) {
-          match = data.id;
-          console.log(data);
-          if (data.message) {
-            noUserFound = false;
-            return;
+          if (data.id) {
+            match = data.id;
+          } else {
+            match = null;
           }
+          
+          console.log(data);
           conToVidChat.setRoom(data.room);
           
         
