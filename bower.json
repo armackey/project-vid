@@ -21,6 +21,7 @@
     "angular-ui-router": "~0.2.15",
     "angular-svg-round-progressbar": "~0.3.10",
     "angular-socket-io": "^0.7.0",
-    "angular-local-storage": "^0.2.7"
+    "angular-local-storage": "^0.2.7",
+    "angular-fancy-modal": "^0.1.4"
   }
 }

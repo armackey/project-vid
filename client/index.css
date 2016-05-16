@@ -121,22 +121,10 @@ section input {
   float: right;
 }
 
-#local-media > video {
-  width: 100px;
-  height: 92px;
-  position: relative;
-  top: 40px;
-  left: 300px;
-}
 
 
-#remote-media > video {
-  width: 100px;
-  height: 92px;
-  position: relative;
-  top: 60;
-  left: 200px;
-}
+
+
 
 
 

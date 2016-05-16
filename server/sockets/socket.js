@@ -45,11 +45,12 @@ module.exports = function(io) {
     });
 
     socket.on('connected', function(token) {
+      console.log(socket.id  + ' has entered');
       userCtrl.isOnline(token, socket.id);
       console.log('The socket connected');
     });
   });
 
-// #LlgBoT8a9kpaLGi-AAAA
+
   
 };

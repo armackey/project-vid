@@ -1,0 +1,22 @@
+#remote-media > video {
+  width: 500px;
+  height: 230px;
+  position: relative;
+  top: 60;
+}
+
+#local-media > video, #local-media {
+  width: 100px;
+  height: 80px;
+  position: relative;
+  top: -84px;
+  left: 303px; 
+  display: inline-block;
+}
+
+#local-media > video {
+  border: 2px solid white;
+  z-index: 5;
+  top: 0px;
+  left: 0px;
+}

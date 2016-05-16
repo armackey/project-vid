@@ -1,32 +1,34 @@
 (function() {
-
+  'use strict';
+  
   angular
     .module('app')
     .factory('conToVidChat', conToVidChat);
 
-    conToVidChat.$inject = ['$http', 'chatSocket', 'authFact', '$q', '$rootScope'];
+    conToVidChat.$inject = ['$http', 'chatSocket', 'authFact', '$q', '$rootScope', '$fancyModal'];
 
-    function conToVidChat($http, chatSocket, authFact, $q, $rootScope) {
+    function conToVidChat($http, chatSocket, authFact, $q, $rootScope, $fancyModal) {
 
-      var room, selectedUser, 
-      time = 0,
+      var room, 
+      selectedUser, 
       socketid,
+      matchName,
+      matchId,
+      time = 0,
       token = authFact.getTokenLocalStorage(),
-      deferred = $q.defer(),
-      self = this;
+      deferred = $q.defer();
 
-      $rootScope.$on('emitTimer', function(event, args) {
-        console.log(args);
-        $rootScope.$broadcast('timeAdded', {data: args});
+      $rootScope.$on('emit-timer', function(event, data) {
+        $rootScope.$broadcast('timeAdded', 'data');
       }); 
 
-      chatSocket.on('request-add-time', function(data) {
-        console.log(data);
+      chatSocket.on('sent-request', function(data) { 
+        $fancyModal.open({templateUrl: './video-chat/add-time-modal/add-time-modal.html'});
       });
 
       return {
-
-        currentTime: 0,
+        sentLike: false, 
+        madeRequest: false, // if made request to add time you'll see a different modal
         inCall: false,
         searchForMatch: function() {
           if (this.inCall) 
@@ -38,19 +40,40 @@
           });
           return deferred.promise;
         },
-        receiveRoomId: function(id) {
-          $http.put('/receiveRoomId', id).then(function(user) {
-            room = user.data;  
+        receiveMatch: function(id) { // user whos waiting to be matched.. didn't find a match at first
+          $http.put('/receiveMatch', id).then(function(user) {
+            matchName = user.data.name;
+            room = user.data.room; 
           });
         },
-        setSocketId: function(arg) {
-          socketid = arg.socketid;
+        setSocketId: function(socket) {
+          socketid = socket.socketid;
         },
-        setRoom: function(arg) {
-          room = arg;
+        getSocketId: function() {
+          return socketid;
         },
-        setId: function(arg) {
-          id = arg;
+        setRoom: function(myRoom) {
+          room = myRoom;
+        },
+        getRoom: function() {
+          return room;
+        },
+        requestAddTime: function(data) {
+          data.room = room;
+          this.madeRequest = true;
+          chatSocket.emit('request-add-time', data);
+        },
+        setMatchId: function(myMatch) {
+          matchId = myMatch;
+        },
+        getMatchId: function() {
+          return matchId;
+        },
+        setMatchName: function(name) {
+          matchName = name;
+        },
+        getMatchName: function() {
+          return matchName;
         },
         enterRoom: function() {
           chatSocket.emit('enter-room', room);
@@ -63,14 +86,7 @@
         },
         getTime: function() {
           return time;
-        },
-        updateTimer: function(num) {
-          chatSocket.emit('update-timer', num);
-        },
-
-        // broadcastTime: function() {
-        //   $rootScope.$broadcast('timerBroadcast');
-        // }
+        }
       };
 
     }

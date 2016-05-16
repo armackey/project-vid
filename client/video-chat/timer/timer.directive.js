@@ -4,59 +4,88 @@
   angular.module('addTime', [])
     .directive('timer', timer);
 
-  function timer($timeout, $http, $interval, conToVidChat) {
+  function timer($timeout, $http, $interval, conToVidChat, authFact, $fancyModal) {
     return {
       restrict: 'E',
       scope: true,
       template:
       '<button ng-click="addTime()">add time</button> ' +
-      '<div round-progress max="60" current="counter" color="#45ccce" bgcolor="#eaeaea" radius="100" ' +
+      '<div round-progress max="maxTime" current="counter" color={{counterColor}} bgcolor="#eaeaea" radius="100" ' +
       'stroke="20" semi="false" rounded="true" clockwise="true" responsive="false" duration="800" ' +
       ' animation="easeInOutQuart" animation-delay="0"></div> ' ,
       link: function(scope, ele, atts) {
-        
-        scope.$on('timeAdded', function(args) {
-          console.log(args);
-          gonnaStartTimer(60);
+
+        scope.$on('timeAdded', function() {
+          startTimer();
         });
+        // #45ccce
 
+        scope.counter = 0;
+        scope.maxTime = scope.counter;
+        var wasCalled = false;
 
-
-        function gonnaStartTimer(num, addTime) {
-          console.log('gonnaStartTimer');
-          if (num < 0)
+        function startTimer() {
+          scope.counter += 60;
+          scope.maxTime = scope.counter;
+          changeColor();
+          if (wasCalled)
             return;
 
-          if (addTime) {
-            scope.counter += addTime;
+          var current;
+          var mytimeout = $timeout(onTimeout,1000);
+
+
+           function onTimeout() {
+            wasCalled = true;
+            
+            scope.counter--;  
+            console.log(scope.counter);
+            changeColor();
+            current = scope.counter;
+            mytimeout = $timeout(onTimeout,1000);
+            if (scope.counter <= 0) {
+              cancelTick();
+            }
           }
 
-          var current;
-          scope.counter = num;
+          function cancelTick() {
+            $timeout.cancel(mytimeout);
+            return;
+          }
 
-          scope.onTimeout = function(){
-            scope.counter--;
-            console.log(scope.counter);
-            current = scope.counter;
-            mytimeout = $timeout(scope.onTimeout,1000);
-            if (scope.counter === 0) {
-              $timeout.cancel(mytimeout);
-            }
-          };
+          // $interval(function() {
+          //   changeColor();
+          // }, 15000);
 
-          var mytimeout = $timeout(scope.onTimeout,1000);
-
-          // add time
           scope.addTime = function() {
-            // scope.counter += 60;
-            conToVidChat.updateTimer(60);
-            scope.maxTime = scope.counter; // new max time
-            console.log('60 + ' + current  + ' = ' +scope.maxTime);
-            console.log('added time + current time = new maxTime time');
+            conToVidChat.requestAddTime({user: authFact.getUser(), message: 'Would like to add time.'});
           };    
-
-
+          
         }
+
+
+        function changeColor() {
+          console.log('was called');
+          if (scope.counter > 60) {
+            scope.counterColor = '#5379E9';
+            return;
+          } 
+          if (scope.counter < 60 && scope.counter > 30) {
+            scope.counterColor = '#59E962';
+            return;
+          } 
+          if (scope.counter < 30 && scope.counter < 15) {
+            scope.counterColor = '#EAFF7C';
+            return;
+          }
+          if (scope.counter <= 15) {
+            scope.counterColor = '#E95D4F';
+            return;
+          }
+        }
+
+
+
       }
     };
   }

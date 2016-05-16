@@ -1,7 +1,6 @@
 var User = require('../models/user.model');
 var AccessToken = require('twilio').AccessToken;
 var ConversationsGrant = AccessToken.ConversationsGrant;
-// var randomUsername = require('../randos');
 require('dotenv').load();
 
 
@@ -16,6 +15,17 @@ exports.setOffline = function(socketid) {
     user[0].inCall = false;
     user[0].isOnline = false;
     user[0].save(function(err) {
+      if (err) throw err;
+    });
+  });
+};
+
+exports.likedMatch = function(userid) {
+  User.findOne({'_id': userid}, function(err, user) {
+    if (err) throw err;
+    if (!user) return;
+    user.likes+=1;
+    user.save(function(err) {
       if (err) throw err;
     });
   });
@@ -62,11 +72,14 @@ exports.isOnline = function(token, socketid) {
   //   console.log(pal);
   // });
 
-exports.receiveRoomId = function(req, res) {
+exports.receiveMatch = function(req, res) {
   var id = req.body.from;
   User.findOne({'_id': id}, function(err, user) {
     if (err) throw err;
-    res.send(user.room);
+    res.send({
+      room: user.room,
+      name: user.name
+    });
   });
 };
 
@@ -129,23 +142,22 @@ exports.login = function(req, res) {
 exports.searchForMatch = function(req, res) {
   var token = req.body.token;
   User.findOne({'token': token}, function(err, user) {
-    console.log(user.inCall);
-    if (user.inCall) {
-      console.log('im in call');
-      User.findOne({'room': user.room})
-        .where({'token': {$ne: token}})
-        .exec(function(err, retrieved) {
+    // if (user.inCall) {
+    //   console.log('call being answered');
+    //   User.findOne({'room': user.room})
+    //     .where({'token': {$ne: token}})
+    //     .exec(function(err, retrieved) {
           
-          res.send({
-            typeUser: 'i am aswering',
-            name: user.name,
-            remoteSocketid: user.socketid,
-            room: user.room,
-            id: user._id
-          });
-        });
-      return;
-    }
+    //       res.send({
+    //         typeUser: 'i am aswering',
+    //         name: user.name,
+    //         // remoteSocketid: user.socketid,
+    //         room: user.room,
+    //         id: user._id
+    //       });
+    //     });
+    //   return;
+    // }
 
     User.find({'isOnline': true})
       .where({'token': {$ne: token}})
@@ -157,7 +169,7 @@ exports.searchForMatch = function(req, res) {
       function doWeMatch(err, retrieved) {
         if (err) throw err;
         if (retrieved.length < 1) {
-          res.send({message: 'sorry no users at this time'}); return; // if we can't find any matches, it needs to search again.... expand search criteria
+          res.send({message: 'sorry no users at this time', socketid: user.socketid}); return; // if we can't find any matches, it needs to search again.... expand search criteria
         }
         
         var matches = retrieved.filter(function(records) {
@@ -199,7 +211,7 @@ exports.searchForMatch = function(req, res) {
 
         var sayHi = {
           typeUser: 'i am calling',
-          remoteSocketid: selectedUser.socketid,
+          socketid: user.socketid,
           room: room,
           name: selectedUser.name,
           id: selectedUser._id

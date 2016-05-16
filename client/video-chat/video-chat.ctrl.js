@@ -4,27 +4,31 @@
     .module('app')
     .controller('videoChatCtrl', videoChatCtrl);  
     // $inject allows us to properly inject modules in our case the $scope object
-    videoChatCtrl.$inject = ['$interval', '$http', '$timeout', 'chatSocket', 'authFact', 'conToVidChat', '$scope'];
+    videoChatCtrl.$inject = ['$interval', '$http', '$timeout', 'chatSocket', 'authFact', 'conToVidChat', '$scope', '$fancyModal', '$rootScope'];
 
-    function videoChatCtrl($interval, $http, $timeout, chatSocket, authFact, conToVidChat, $scope) {
+    function videoChatCtrl($interval, $http, $timeout, chatSocket, authFact, conToVidChat, $scope, $fancyModal, $rootScope) {
 
       var self = this;
 
-      console.log('refresh');
+      
       var conversationsClient;
       var activeConversation;
       var previewMedia;
       var identity;
       var room;
-      var match;
-      var noUserFound;
+
+      self.match = {
+        name: conToVidChat.getMatchName() ? conToVidChat.getMatchName() : null,
+        id: null,
+      };
+
+      $rootScope.$on('emit-timer', function(data) {
+        self.match.name = conToVidChat.getMatchName(); // for the user being found or called
+      });
+
       var token = authFact.getTokenLocalStorage();
 
       self.currentUser = authFact.getUser();
-      // self.isMatched = false;
-      // self.counter = 5;
-      // self.maxTime = self.counter;
-
       conToVidChat.connectToSocket();
 
       // Check for WebRTC
@@ -34,10 +38,8 @@
 
       $http.put('/twilioToken', token).then(function(user) {
         identity = user.data.identity;
-        console.log(user);
         var accessManager = new Twilio.AccessManager(user.data.token);
 
-        console.log(accessManager);
         // Check the browser console to see your generated identity. 
         // Send an invite to yourself if you want! 
 
@@ -49,31 +51,32 @@
       });
 
       function clientConnected() {
-        console.log('clientConnected');
         conToVidChat.searchForMatch().then(function(data) {
-          if (data.id) {
-            match = data.id;
-          } else {
-            match = null;
-          }
-          
+          conToVidChat.setSocketId(data);
           console.log(data);
-          conToVidChat.setRoom(data.room);
-          
-        
+          if (!data.message) {
+            self.match.id = data.id;
+            self.match.name = data.name;
+            conToVidChat.setMatchName(data.name);
+            conToVidChat.setRoom(data.room);
+            conToVidChat.setMatchId(data.id);
+          } else {
+            self.match.id = null;
+          }
+
       }).then(function() {
-          
-          if (noUserFound === false)
-            return;
-          console.log(match);
 
           conversationsClient.on('invite', function(invite) {
+
             invite.accept().then(conversationStarted);
-            // var id = invite;
-            // conToVidChat.receiveRoomId(id);
+            var id = invite;
+            conToVidChat.receiveMatch(id);
+            conToVidChat.setMatchId(id);
+
           });
+          
           if (activeConversation) {
-            activeConversation.invite(match);
+            activeConversation.invite(self.match.id);
           } else {
             // Create a conversation
             var options = {};
@@ -81,7 +84,7 @@
               options.localMedia = previewMedia;
             }
 
-            conversationsClient.inviteToConversation(match, options).then(conversationStarted, function(error) {
+            conversationsClient.inviteToConversation(self.match.id, options).then(conversationStarted, function(error) {
 
               log('Unable to create conversation');
               console.error('Unable to create conversation', error);
@@ -93,7 +96,6 @@
       // Conversation is live
       function conversationStarted(conversation) {
         log('In an active Conversation');
-        console.log(conversation);
         activeConversation = conversation;
         // Draw local video, if not already previewing
         if (!previewMedia) {
@@ -102,16 +104,17 @@
 
         // When a participant joins, draw their video on screen
         conversation.on('participantConnected', function(participant) {
-          console.log(participant);
-          log("Participant '" + participant.identity + "' connected");
-          participant.media.attach('#remote-media');
+          
           conToVidChat.enterRoom();  // *********** user joining socket room
-          console.log('participant connected***************************');
+
+          // log("Participant '" + participant.identity + "' connected");
+          participant.media.attach('#remote-media');
+          
           conToVidChat.inCall = true;
-          chatSocket.on('start-timer', function(data) {
-            $scope.$emit('emitTimer', data);
-            // conToVidChat.setTime(data.time);
-          }); // socket should start timer
+
+          chatSocket.on('start-timer', function(data) { // socket should start timer
+            $scope.$emit('emit-timer', data); 
+          }); 
         });
 
         // When a participant disconnects, note in log
