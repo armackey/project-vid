@@ -13,16 +13,12 @@
 
       return {
 
-        setUser: function(user) {
-          
-          var deferred = $q.defer();
+        setUser: function(user) {  
           currentUser = user;
-          deferred.resolve(currentUser);
-          return deferred.promise;
         },
 
         getUser: function() {
-          return currentUser ? currentUser : false;
+          return currentUser;
         },
 
         setTokenLocalStorage: function(token) {

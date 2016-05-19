@@ -19,19 +19,22 @@
       self.matchedName = conToVidChat.getMatchName() ? conToVidChat.getMatchName() : null;
 
       self.posResponse = function() {
-        console.log('yes');
-        response.answer = 'yes';
+        handleResponse('yes');
         chatSocket.emit('response-add-time', response);  
       };
       
       self.negResponse = function() {
-        response.answer = 'no';
+        handleResponse('no');
         chatSocket.emit('response-add-time', response);  
       };
 
+      function handleResponse(text) {
+        response.answer = text;
+      }
+
       chatSocket.on('received-response', function(data) {
         if (data.answer === 'yes') {
-          $rootScope.$emit('emit-timer', data);
+          $rootScope.$broadcast('emit-timer');
         } else {
           console.log('sorry');
         }

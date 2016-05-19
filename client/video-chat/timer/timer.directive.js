@@ -9,20 +9,27 @@
       restrict: 'E',
       scope: true,
       template:
-      '<button ng-click="addTime()">add time</button> ' +
-      '<div round-progress max="maxTime" current="counter" color={{counterColor}} bgcolor="#eaeaea" radius="100" ' +
+      '<div class="round-progress" round-progress max="maxTime" current="counter" color={{counterColor}} bgcolor="#eaeaea" radius="100" ' +
       'stroke="20" semi="false" rounded="true" clockwise="true" responsive="false" duration="800" ' +
-      ' animation="easeInOutQuart" animation-delay="0"></div> ' ,
+      ' animation="easeInOutQuart" animation-delay="0"></div> ' + 
+      '<button class="add-time" ng-click="addTime()">add time</button> ',
       link: function(scope, ele, atts) {
 
-        scope.$on('timeAdded', function() {
+        scope.$on('chat-starts', function() {
+          startTimer();
+        });
+
+        scope.$on('emit-timer', function() {
+          console.log('time should be added');
           startTimer();
         });
         // #45ccce
 
+        var wasCalled = false;
+
         scope.counter = 0;
         scope.maxTime = scope.counter;
-        var wasCalled = false;
+        
 
         function startTimer() {
           scope.counter += 60;
@@ -37,9 +44,7 @@
 
            function onTimeout() {
             wasCalled = true;
-            
             scope.counter--;  
-            console.log(scope.counter);
             changeColor();
             current = scope.counter;
             mytimeout = $timeout(onTimeout,1000);
@@ -65,7 +70,6 @@
 
 
         function changeColor() {
-          console.log('was called');
           if (scope.counter > 60) {
             scope.counterColor = '#5379E9';
             return;
@@ -74,7 +78,7 @@
             scope.counterColor = '#59E962';
             return;
           } 
-          if (scope.counter < 30 && scope.counter < 15) {
+          if (scope.counter < 30 && scope.counter > 15) {
             scope.counterColor = '#EAFF7C';
             return;
           }

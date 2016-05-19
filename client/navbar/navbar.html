@@ -1,0 +1,9 @@
+<div ng-controller="navbarCtrl as nav">
+  <nav class="navbar">
+    <ul>
+      <li class="nav-items">Meet Real People In Real Time</li>
+      <button ng-hide="nav.loggedIn" class="nav-items" ng-click="nav.login()">facebook login</button>
+      <button ng-show="nav.loggedIn" class="nav-items" ng-click="nav.logOut()">logout</button>
+    </ul>
+  </nav>
+</div>

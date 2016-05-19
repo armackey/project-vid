@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  
+
   angular
     .module('app')
     .factory('conToVidChat', conToVidChat);
@@ -9,17 +9,12 @@
 
     function conToVidChat($http, chatSocket, authFact, $q, $rootScope, $fancyModal) {
 
-      var room, 
-      selectedUser, 
-      socketid,
-      matchName,
-      matchId,
-      time = 0,
+      var room, selectedUser, socketid, matchName, matchId,
       token = authFact.getTokenLocalStorage(),
       deferred = $q.defer();
 
-      $rootScope.$on('emit-timer', function(event, data) {
-        $rootScope.$broadcast('timeAdded', 'data');
+      $rootScope.$on('users-connected', function() {
+        $rootScope.$broadcast('chat-starts'); 
       }); 
 
       chatSocket.on('sent-request', function(data) { 
@@ -27,12 +22,12 @@
       });
 
       return {
+        
         sentLike: false, 
         madeRequest: false, // if made request to add time you'll see a different modal
         inCall: false,
+
         searchForMatch: function() {
-          if (this.inCall) 
-            return;
           $http.put('/searchForMatch', token).then(function(user) {
             deferred.resolve(user.data);
           }, function(user) {
@@ -40,53 +35,61 @@
           });
           return deferred.promise;
         },
+
         receiveMatch: function(id) { // user whos waiting to be matched.. didn't find a match at first
           $http.put('/receiveMatch', id).then(function(user) {
             matchName = user.data.name;
             room = user.data.room; 
           });
         },
+
         setSocketId: function(socket) {
           socketid = socket.socketid;
         },
+
         getSocketId: function() {
           return socketid;
         },
+
         setRoom: function(myRoom) {
           room = myRoom;
         },
+
         getRoom: function() {
           return room;
         },
+
         requestAddTime: function(data) {
           data.room = room;
           this.madeRequest = true;
           chatSocket.emit('request-add-time', data);
         },
+
         setMatchId: function(myMatch) {
+          console.log(myMatch);
           matchId = myMatch;
         },
+
         getMatchId: function() {
           return matchId;
         },
+
         setMatchName: function(name) {
           matchName = name;
         },
+
         getMatchName: function() {
           return matchName;
         },
+
         enterRoom: function() {
           chatSocket.emit('enter-room', room);
         },
+
         connectToSocket: function() {
           chatSocket.emit('connected', token.token);
         },
-        setTime: function(arg) {
-          time = arg;
-        },
-        getTime: function() {
-          return time;
-        }
+
       };
 
     }

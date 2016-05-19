@@ -1,5 +1,7 @@
-<div id="preference">
+<div ng-include src="'./navbar/navbar.html'"></div>
 
+<div id="preference">
+  Hi {{settingsCtrl.myName}}!!
   <div id="gender" class="shared">
     <p>Let's set your preferences</p>
     <form action="" ng-submit="settingsCtrl.sendPref()">

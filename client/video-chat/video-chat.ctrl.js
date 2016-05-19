@@ -1,34 +1,32 @@
 (function() {
-
+  'use strict';
+  
   angular
     .module('app')
     .controller('videoChatCtrl', videoChatCtrl);  
     // $inject allows us to properly inject modules in our case the $scope object
-    videoChatCtrl.$inject = ['$interval', '$http', '$timeout', 'chatSocket', 'authFact', 'conToVidChat', '$scope', '$fancyModal', '$rootScope'];
+    videoChatCtrl.$inject = ['$interval', '$http', 'chatSocket', 'authFact', 'conToVidChat', '$scope', '$fancyModal', '$rootScope'];
 
-    function videoChatCtrl($interval, $http, $timeout, chatSocket, authFact, conToVidChat, $scope, $fancyModal, $rootScope) {
+    function videoChatCtrl($interval, $http, chatSocket, authFact, conToVidChat, $scope, $fancyModal, $rootScope) {
 
       var self = this;
 
-      
+      var token = authFact.getTokenLocalStorage();
       var conversationsClient;
       var activeConversation;
       var previewMedia;
       var identity;
       var room;
 
+
+      self.inCall = false;
+
+      self.currentUser = authFact.getUser();
       self.match = {
         name: conToVidChat.getMatchName() ? conToVidChat.getMatchName() : null,
         id: null,
       };
 
-      $rootScope.$on('emit-timer', function(data) {
-        self.match.name = conToVidChat.getMatchName(); // for the user being found or called
-      });
-
-      var token = authFact.getTokenLocalStorage();
-
-      self.currentUser = authFact.getUser();
       conToVidChat.connectToSocket();
 
       // Check for WebRTC
@@ -67,11 +65,14 @@
       }).then(function() {
 
           conversationsClient.on('invite', function(invite) {
-
-            invite.accept().then(conversationStarted);
+            
             var id = invite;
             conToVidChat.receiveMatch(id);
-            conToVidChat.setMatchId(id);
+            conToVidChat.setMatchId(id.from);
+
+            invite.accept().then(conversationStarted).then(function() {
+              self.match.name = conToVidChat.getMatchName();
+            });
 
           });
           
@@ -95,7 +96,9 @@
 
       // Conversation is live
       function conversationStarted(conversation) {
-        log('In an active Conversation');
+        $scope.$on('$destroy', function() {
+          conversation.localMedia.stop();
+        });
         activeConversation = conversation;
         // Draw local video, if not already previewing
         if (!previewMedia) {
@@ -110,16 +113,20 @@
           // log("Participant '" + participant.identity + "' connected");
           participant.media.attach('#remote-media');
           
-          conToVidChat.inCall = true;
+          // conToVidChat.inCall = true;
+          self.inCall = true;
+          
 
-          chatSocket.on('start-timer', function(data) { // socket should start timer
-            $scope.$emit('emit-timer', data); 
+          chatSocket.on('users-connected', function(data) { 
+            $scope.$emit('users-connected'); // this will alert app that the timer should start
           }); 
+
+          
         });
 
-        // When a participant disconnects, note in log
         conversation.on('participantDisconnected', function(participant) {
-          conToVidChat.inCall = false;
+          self.inCall = false;
+          conversation.localMedia.stop();
           log("Participant '" + participant.identity + "' disconnected");
         });
 

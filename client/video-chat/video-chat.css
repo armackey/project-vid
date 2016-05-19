@@ -2,7 +2,7 @@
   width: 500px;
   height: 230px;
   position: relative;
-  top: 60;
+  top: 60px;
 }
 
 #local-media > video, #local-media {
@@ -17,6 +17,44 @@
 #local-media > video {
   border: 2px solid white;
   z-index: 5;
-  top: 0px;
+  top: -59px;
   left: 0px;
+}
+
+.fa-heart-o, .fa-heart {
+  color: red;
+}
+
+.round-progress, .video-container {
+  display: inline-block;
+}
+
+.round-progress {
+  top: -242px;
+  left: 243px;
+  position: relative;
+  width: 50px !important;
+  height: 200px;
+}
+
+.add-time {
+  position: relative;
+  top: -153px;
+  left: -45px;
+}
+
+.heart {
+  position: absolute;
+  top: 307px;
+  left: 230px;
+}
+
+#liked-text {
+  z-index: 5;
+  color: white;
+  position: relative;
+  font-size: 12px;
+  top: -200px;
+  left: 200px;
+  display: inline-block;
 }

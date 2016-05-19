@@ -8,7 +8,6 @@
     messageCtrl.$inject = ['$http', '$timeout', '$interval', 'chatSocket', 'authFact'];
     
     function messageCtrl($http, $timeout, $interval, chatSocket, authFact) {
-      
 
       chatSocket.on('greeting-from-server', function(data) {
         console.log(data);

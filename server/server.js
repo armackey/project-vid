@@ -1,6 +1,6 @@
 var path = require('path');
 var express = require('express');
-var passport = require('passport');
+// var passport = require('passport');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
@@ -15,20 +15,9 @@ mongoose.connect('mongodb://localhost/video-match', function(err){
     console.log('turn on mongo') ;
     return err;
   }
-  console.log('connected to DB');
-  User.find({}, function (err, users) {
-    users.filter(function(ele, i, array) {
-      return ele.userTaken === true;
-    }).map(function(ele, i, array) {
-      ele.userTaken = false;
-      ele.save();
-      console.log('users have been reset');
-    });
-  });
+    console.log('connected to DB');
 });
 
-
-// Create Express webapp
 
 app.use(express.static('client'));
 app.use(cookieParser());
@@ -38,17 +27,30 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }));
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 
-require('./routes/fb.routes')(app, passport);
-require('./config/passport')(passport);
+// require('./routes/fb.routes')(app, passport);
+// require('./config/passport')(passport);
 require('./sockets/socket')(io);
 require('./sockets/video-chat-sockets')(io);
 
 app.use(require('./routes/user.routes'));
 
+// app.use(function (req, res, next) {
+//   // Website you wish to allow to connect
+//   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+//   // Request methods you wish to allow
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+//   // Request headers you wish to allow
+//   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+//   // Set to true if you need the website to include cookies in the requests sent
+//   // to the API (e.g. in case you use sessions)
+//   res.setHeader('Access-Control-Allow-Credentials', true);
+//   // Pass to next layer of middleware
+//     next();
+// });
 
 
 // Create http server and run it

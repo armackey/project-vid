@@ -10,8 +10,6 @@
     function homeCtrl($scope, $http, $timeout, $interval, authFact) {
       
       var self = this;
-      console.log('home');
-
 
     }
     

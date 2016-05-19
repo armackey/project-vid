@@ -31,6 +31,13 @@ exports.likedMatch = function(userid) {
   });
 };
 
+exports.itsMutual = function(room) {
+  console.log(room);
+  User.find({'room': room}, function(err, users) {
+    console.log(users);
+  });
+};
+
 exports.inCall = function(socketid) {
   // build toggle for setting someone in a call
 };
@@ -48,29 +55,6 @@ exports.isOnline = function(token, socketid) {
     });
   });
 };
-
-// (setInterval(function() {
-//   User.find({}, function (err, users) {
-//     users.filter(function(ele, i, array) {
-//       return ele.isMatched === true;
-//     }).map(function(ele, i, array) {
-//       ele.isMatched = false;
-//       ele.available = false;
-//       ele.save();
-//     });
-//   });
-// }, 10000));
-
-
-  // User.find({}, function(err, users) {
-  //   var name = 'jess';
-  //   var pal = users.filter(function(ele, i, array) {
-  //     if (ele.name !== name) {
-  //       return ele;
-  //     }
-  //   });
-  //   console.log(pal);
-  // });
 
 exports.receiveMatch = function(req, res) {
   var id = req.body.from;
@@ -96,12 +80,12 @@ username for the client requesting a token, and takes a device ID as a query
 parameter.
 */
 exports.getToken = function(req, res) {
+  var myToken = req.body.token;
+  // if (!auth(myToken)) 
+  //   return;
+  User.findOne({'token': myToken}, function(err, user) {
 
-  var data = req.body;
-  User.findOne({'token': data.token}, function(err, user) {
-    
     var identity = user.id;
-    console.log(identity);  
     // Create an access token which we will sign and return to the client,
     // containing the grant we just created
     var token = new AccessToken(
@@ -131,9 +115,54 @@ exports.getToken = function(req, res) {
 
 
 exports.login = function(req, res) {
-  res.send({
-    token: req.user.token,
-    name: req.user.name
+  User.findOne({'facebookID' : req.body.id}, function(err, user) {
+    
+    if (err) throw err;
+
+    if (user) {
+
+      user.token = req.body.token;
+      user.name  = req.body.name;
+      user.save(function(err) {
+        if (err) throw err;
+      });
+
+      if (!user.preferences.age.lt || !user.preferences.age.gt || !user.preferences.iWantToMeet) {
+        res.send({
+          view: 'settings', 
+          message: 'missing preferences'
+        }); 
+        return;       
+      }
+      // may need to add return and save here as well ***IF*** decided to send info for new users
+
+      res.send({
+        view: 'video-chat',
+        message: 'welcome back'
+      });
+
+      return;
+
+    } else {
+
+      var newUser = new User();
+
+      newUser.facebookID = req.body.id; 
+      newUser.gender = req.body.gender;
+      newUser.token = req.body.token; 
+      newUser.name  = req.body.name;
+      newUser.email = req.body.email;
+
+      newUser.save(function(err) {
+        if (err) throw err;
+      });
+    }
+  
+
+    res.send({
+      view: 'settings', 
+      message: 'missing preferences'
+    }); 
   });
 };
 
@@ -141,6 +170,8 @@ exports.login = function(req, res) {
 // TODO: ADD LOCATION TO QUERY............!!!!!!!!!!!!!!
 exports.searchForMatch = function(req, res) {
   var token = req.body.token;
+  // if (!auth(token)) 
+  //   return;
   User.findOne({'token': token}, function(err, user) {
     // if (user.inCall) {
     //   console.log('call being answered');
@@ -232,11 +263,14 @@ function createPrivateRoom(caller, answer) {
 
 
 exports.preferences = function(req, res) {
+  var token = req.body.token;
+  // if (!auth(token)) 
+  //   return;
   var pref = req.body.preferences;
   var gender = req.body.gender;
   var age = req.body.myAge;
 
-  var token = req.body.token;
+  
 
   User.findOne({'token': token}, function(err, user) {
 
@@ -255,9 +289,18 @@ exports.preferences = function(req, res) {
       if (err) 
         throw err;
     });
+    res.send({message: 'thank you!'});
   });
 };
 
+function auth(token) {
+  User.findOne({'token': token}, function(err, user) {
+    if (user) 
+      return true;
+    else
+      return false;
+  });
+}
 
 
 

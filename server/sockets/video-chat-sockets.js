@@ -11,7 +11,7 @@ module.exports = function(io) {
       }
 
       if (clientsInRoom.length === 2) {
-        io.in(room).emit('start-timer', {time: 60}); // should start timer for both clients      
+        io.in(room).emit('users-connected'); // should start timer for both clients      
       }
 
     });
@@ -33,7 +33,8 @@ module.exports = function(io) {
     });
 
     socket.on('mutual-like', function(data) {
-      userCtrl.likedMatch(data.matchId);
+      console.log('its mutual');
+      userCtrl.itsMutual(data.room);
       // in mutual-like, write a function that will find users in room from db
       // create chat from there
       io.in(data.room).emit('notify-its-mutual', data);
@@ -41,10 +42,3 @@ module.exports = function(io) {
 
   });
 };
-
-
-// for (var i = 0; i < clientsInRoom.length; i+=1) {
-//   if (clientsInRoom[i] !== data.socketid) {
-//     io.in(room).emit('request-add-time', {message: '{user} would like to add time.'});    
-//   }
-// }
