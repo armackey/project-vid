@@ -42,6 +42,10 @@
         
 
       self.sendPref = function() {
+        if (!self.me.preferences.iWantToMeet || !self.me.preferences.ltAge || !self.me.preferences.gtAge || !self.me.gender || !self.me.myAge) {
+          console.log('something missing');
+          return;
+        }
         $state.go('video-chat');
         $http.post('/preferences', self.me).success(function(data) {
 

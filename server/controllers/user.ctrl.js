@@ -266,6 +266,10 @@ exports.preferences = function(req, res) {
   var token = req.body.token;
   // if (!auth(token)) 
   //   return;
+  if (!req.body.preferences.iWantToMeet || !req.body.preferences.ltAge || !req.body.preferences.gtAge || !req.body.gender || !req.body.myAge) {
+    console.log('something missing');
+    return;
+  }
   var pref = req.body.preferences;
   var gender = req.body.gender;
   var age = req.body.myAge;
@@ -273,7 +277,6 @@ exports.preferences = function(req, res) {
   
 
   User.findOne({'token': token}, function(err, user) {
-
     user.preferences = {
       iWantToMeet: pref.iWantToMeet,
       age: {
