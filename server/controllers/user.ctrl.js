@@ -81,8 +81,9 @@ parameter.
 */
 exports.getToken = function(req, res) {
   var myToken = req.body.token;
-  // if (!auth(myToken)) 
-  //   return;
+  if (auth(myToken, res) === false) {
+    return;
+  }
   User.findOne({'token': myToken}, function(err, user) {
 
     var identity = user.id;
@@ -170,8 +171,9 @@ exports.login = function(req, res) {
 // TODO: ADD LOCATION TO QUERY............!!!!!!!!!!!!!!
 exports.searchForMatch = function(req, res) {
   var token = req.body.token;
-  // if (!auth(token)) 
-  //   return;
+  if (auth(token, res) === false) {
+    return;
+  }
   User.findOne({'token': token}, function(err, user) {
     // if (user.inCall) {
     //   console.log('call being answered');
@@ -189,6 +191,11 @@ exports.searchForMatch = function(req, res) {
     //     });
     //   return;
     // }
+    if (!user) {
+      console.log(token);
+      console.log(user);console.log('cant find user');console.log('cant find user');console.log('cant find user');console.log('cant find user');
+      return;
+    }
 
     User.find({'isOnline': true})
       .where({'token': {$ne: token}})
@@ -264,8 +271,9 @@ function createPrivateRoom(caller, answer) {
 
 exports.preferences = function(req, res) {
   var token = req.body.token;
-  // if (!auth(token)) 
-  //   return;
+  if (auth(token, res) === false) {
+    return;
+  }
   if (!req.body.preferences.iWantToMeet || !req.body.preferences.ltAge || !req.body.preferences.gtAge || !req.body.gender || !req.body.myAge) {
     console.log('something missing');
     return;
@@ -296,15 +304,16 @@ exports.preferences = function(req, res) {
   });
 };
 
-function auth(token) {
+function auth(token, res) {
   User.findOne({'token': token}, function(err, user) {
-    if (user) 
+    if (user) {
       return true;
-    else
+    } else {
+      res.send({'view': 'home'});
       return false;
+    }
   });
 }
-
 
 
 

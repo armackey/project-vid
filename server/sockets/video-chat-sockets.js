@@ -27,6 +27,11 @@ module.exports = function(io) {
       io.in(data.room).emit('received-response', data);
     });
 
+    socket.on('leaving-chat', function(data) {
+      console.log(data);
+      io.in(data.room).emit('peer-left-chat', data);
+    });
+
     socket.on('like-sent', function(data) {
       userCtrl.likedMatch(data.matchId);
       io.in(data.room).emit('notify-liked', data);

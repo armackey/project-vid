@@ -5,9 +5,9 @@
     .module('app')
     .controller('videoChatCtrl', videoChatCtrl);  
     // $inject allows us to properly inject modules in our case the $scope object
-    videoChatCtrl.$inject = ['$interval', '$http', 'chatSocket', 'authFact', 'conToVidChat', '$scope', '$fancyModal', '$rootScope'];
+    videoChatCtrl.$inject = ['$interval', '$http', 'chatSocket', 'authFact', 'conToVidChat', '$scope', '$fancyModal', '$rootScope', '$state'];
 
-    function videoChatCtrl($interval, $http, chatSocket, authFact, conToVidChat, $scope, $fancyModal, $rootScope) {
+    function videoChatCtrl($interval, $http, chatSocket, authFact, conToVidChat, $scope, $fancyModal, $rootScope, $state) {
 
       var self = this;
 
@@ -17,6 +17,28 @@
       var previewMedia;
       var identity;
       var room;
+      var convoStarted;
+
+      $scope.$on('$destroy', function() {
+        // if one user leaves, use socket to find users in room and stop their videos and timer
+        // TODO: set a rootScope and detroy timer
+        // TODO: toggle inCall so that addtime and name disappear
+        self.inCall = false;
+        console.log('destroy controller');
+        chatSocket.emit('leaving-chat', {room: room});
+          endVideoStream();
+      });
+
+
+
+      chatSocket.on('peer-left-chat', function(data) {
+        endVideoStream();
+      });
+
+      $rootScope.$on('users-connected', function() {
+        room = conToVidChat.getRoom();
+        console.log(room);
+      });
 
 
       self.inCall = false;
@@ -34,9 +56,12 @@
         alert('WebRTC is not available in your browser.');
       }
 
-      $http.put('/twilioToken', token).then(function(user) {
-        identity = user.data.identity;
-        var accessManager = new Twilio.AccessManager(user.data.token);
+      $http.put('/twilioToken', token).then(function(data) {
+        if (data.data.view) {
+          $state.go(data.data.view);
+        }
+        identity = data.data.identity;
+        var accessManager = new Twilio.AccessManager(data.data.token);
 
         // Check the browser console to see your generated identity. 
         // Send an invite to yourself if you want! 
@@ -50,6 +75,9 @@
 
       function clientConnected() {
         conToVidChat.searchForMatch().then(function(data) {
+          if (data.view) {
+            $state.go(data.view);
+          }
           conToVidChat.setSocketId(data);
           console.log(data);
           if (!data.message) {
@@ -96,9 +124,9 @@
 
       // Conversation is live
       function conversationStarted(conversation) {
-        $scope.$on('$destroy', function() {
-          conversation.localMedia.stop();
-        });
+
+        convoStarted = conversation; 
+
         activeConversation = conversation;
         // Draw local video, if not already previewing
         if (!previewMedia) {
@@ -137,6 +165,12 @@
           conversation.disconnect();
           activeConversation = null;
         });
+      }
+
+      function endVideoStream() {
+        convoStarted.localMedia.stop();
+        convoStarted.disconnect();
+        activeConversation = null;
       }
 
       //  Local video preview
