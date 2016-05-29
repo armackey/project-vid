@@ -35,7 +35,15 @@
           url: '/messages',
           templateUrl: '/messages/messages.html',
           controller: 'messageCtrl',
-          controllerAs: 'message',
+          controllerAs: 'msg',
+      });
+
+      $stateProvider
+        .state('messages.id', {
+          url: '/messages/:id',
+          templateUrl: '/messages/messages.id.html',
+          controller: 'messageCtrl',
+          controllerAs: 'msg',
       });
 
       $stateProvider

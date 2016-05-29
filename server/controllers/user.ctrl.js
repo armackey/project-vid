@@ -1,8 +1,39 @@
 var User = require('../models/user.model');
+var Message = require('../models/message.model');
 var AccessToken = require('twilio').AccessToken;
 var ConversationsGrant = AccessToken.ConversationsGrant;
+var roomStore = {};
+
 require('dotenv').load();
 
+
+function setUsersInRoom(room, users) {
+  roomStore[room] = users;
+}
+
+exports.getUsersInRoom = function(room) {
+  return roomStore[room];
+};
+
+
+User.findOne({'name': 'Allen Redman Mackey'}, function(err, user) {
+
+  // user.save(function(err) {
+  //   // if (err) 
+  //   //   throw err;
+  //   console.log('saved message');
+  //   console.log(user);
+  // });
+
+  // var msg = new Message();
+  // msg.content.message = 'test';
+  // msg.save();
+  // Message.find({}, function(err, msgs) {
+  //   console.log(msgs);
+  // });
+
+
+});
 
 exports.setOffline = function(socketid) {
   User.find({'socketid': socketid}, function(err, user) {
@@ -11,7 +42,6 @@ exports.setOffline = function(socketid) {
     if (user.length < 1) return;
 
     user[0].socketid = '';
-    user[0].room = '';
     user[0].inCall = false;
     user[0].isOnline = false;
     user[0].save(function(err) {
@@ -20,7 +50,7 @@ exports.setOffline = function(socketid) {
   });
 };
 
-exports.likedMatch = function(userid) {
+exports.tallyLikes = function(userid) {
   User.findOne({'_id': userid}, function(err, user) {
     if (err) throw err;
     if (!user) return;
@@ -32,10 +62,12 @@ exports.likedMatch = function(userid) {
 };
 
 exports.itsMutual = function(room) {
-  console.log(room);
-  User.find({'room': room}, function(err, users) {
-    console.log(users);
-  });
+  for (var key in roomStore) {
+    if (key === room) {
+      // do something amazeBALLLLLLSSSSSSSSSSSSSSSŠ=====================
+      console.log(room);
+    }
+  }
 };
 
 exports.inCall = function(socketid) {
@@ -56,15 +88,23 @@ exports.isOnline = function(token, socketid) {
   });
 };
 
+
 exports.receiveMatch = function(req, res) {
+  // iterates over roomStore to find whom they're matched with using the matched id
   var id = req.body.from;
-  User.findOne({'_id': id}, function(err, user) {
-    if (err) throw err;
-    res.send({
-      room: user.room,
-      name: user.name
-    });
-  });
+
+  for (var room in roomStore) {
+    if (Array.isArray(roomStore[room])) {
+      for (var user = 0; user < roomStore[room].length; user++) {
+        if (roomStore[room][user].id === id) {
+          res.send({
+            room: room,
+            name: roomStore[room][user].name
+          });
+        }
+      }
+    }
+  }
 };
 
 /*
@@ -96,7 +136,6 @@ exports.getToken = function(req, res) {
     );
     
     token.identity = identity;
-    console.log('i am ' + token.identity);
     
     // Assign the generated identity to the token
     //grant the access token Twilio Video capabilities
@@ -107,7 +146,8 @@ exports.getToken = function(req, res) {
     res.send({
       identity: identity,
       token: token.toJwt(),
-      name: user.name
+      name: user.name,
+      likes: user.likes
     });
 
   });
@@ -121,7 +161,9 @@ exports.login = function(req, res) {
     if (err) throw err;
 
     if (user) {
-
+      if (user.token !== req.body.token) {
+        console.log('new token');
+      } 
       user.token = req.body.token;
       user.name  = req.body.name;
       user.save(function(err) {
@@ -228,13 +270,13 @@ exports.searchForMatch = function(req, res) {
 
         var callerEmail = user.email; // callerEmail prevents users email from being modified
         var room = createPrivateRoom(user, matches[0]);
-        
+        setUsersInRoom(room, [{id: user.id, name: user.name}, {id: matches[0].id, name: matches[0].name}]);
 
         function storeRoom(room) {
-          user.room = room;
-          user.email = callerEmail;
+          // user.room = room;
+          // user.email = callerEmail;
           user.inCall = true;
-          selectedUser.room = room; // answering user gets the same room... duh..
+          // selectedUser.room = room; // answering user gets the same room... duh..
           selectedUser.inCall = true;
 
           selectedUser.save(function(err) {
@@ -263,7 +305,7 @@ exports.searchForMatch = function(req, res) {
 
 
 function createPrivateRoom(caller, answer) {
-  return caller.email+=answer.email;
+  return caller.email+answer.email;
 }
 
 

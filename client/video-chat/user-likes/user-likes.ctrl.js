@@ -18,6 +18,7 @@
 
       // when chat starts we need the id and name of our matched user  
       $rootScope.$on('chat-starts', function(data) { 
+        self.totalLikes = conToVidChat.getLikes(); // may have to go in the 'chat-starts' listener
         sendLike = {
          matchId: conToVidChat.getMatchId(), 
          matchedName: conToVidChat.getMatchName(),
@@ -30,6 +31,7 @@
         // if that name is the current user they need to know they have received a like
         if (data.matchedName === authFact.getUser()) {
           handleLikeNotification('like receieved.');
+          self.totalLikes+=1;
           self.likeReceived = true;
         } else {
           handleLikeNotification('like was sent');

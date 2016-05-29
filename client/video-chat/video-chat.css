@@ -39,13 +39,14 @@
 
 .add-time {
   position: relative;
-  top: -153px;
+  top: -147px;
   left: -45px;
+  width: 22px;
 }
 
 .heart {
   position: absolute;
-  top: 307px;
+  top: 345px;
   left: 230px;
 }
 
@@ -58,3 +59,30 @@
   left: 200px;
   display: inline-block;
 }
+.likes {
+  position: relative;
+  left: 200px;
+  top: 55px;
+  z-index: 5;
+}
+.likes > .fa {
+  display: inline-block;
+}
+
+.likes > div {
+  color:white; 
+  font-size: 8px;
+  display: inline;
+  top: 70px;
+  position: relative;
+  top: -9px;
+}
+
+
+
+
+
+
+
+
+

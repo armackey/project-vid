@@ -17,7 +17,11 @@ var UserSchema = new Schema({
   location: {type: [Number]},
   created_at: {type: Date, default: Date.now},
   likes: {type: Number, default: 0},
+
+  
   message: {type: Schema.Types.ObjectId, ref: 'Message'},
+
+  
   preferences: {
     iWantToMeet: String,
     age: {

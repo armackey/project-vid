@@ -1,15 +1,8 @@
 <div ng-include src="'./navbar/navbar.html'"></div>
-<!-- <div ng-controller="messageCtrl"> -->
-<!--   <div ng-repeat="message in messages">
-
-    {{message}}
-    
-  </div> -->
-<!-- </div> -->
 
 <div>
-  <input placeholder="username" type="text">
-  <button id="add-username">send username</button>
-  <input placeholder="messages" type="text">
-  <button id="send-message">send messages</button>
+  <div class="threads" ng-repeat="thread in msg.threads">
+    <div class="name">{{thread.name}} </div>
+    <div class="snippet">{{thread.snippet}} </div>
+  </div>
 </div>

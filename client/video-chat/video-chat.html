@@ -1,15 +1,22 @@
 <div ng-include src="'./navbar/navbar.html'"></div>
 
-<div ng-show="video.match.name">Say hi to {{video.match.name}}!</div>
+
 
 <div class="video-container" ng-show="video.inCall">
   
-  <div id="remote-media"></div>
-  <div id="local-media"></div>
-
-  <timer></timer>
-
+  <div ng-show="video.match.name">Say hi to {{video.match.name}}!</div>    
   <div ng-controller="userLikes as uL">
+    
+    <div class="likes">
+      <i class="fa fa-heart-o" aria-hidden="true"></i> 
+      <div>{{uL.totalLikes}}</div>
+    </div>
+
+    <div id="remote-media"></div>
+    <div id="local-media"></div>
+    <timer></timer>
+
+    
     <div id="liked-text">{{uL.notifyLiked}}</div>
     <i class="fa fa-heart-o heart" ng-hide="uL.clickedLike" ng-click="uL.iLikeYou();" aria-hidden="true"></i>
     <i class="fa fa-heart heart" ng-show="uL.clickedLike" aria-hidden="true"></i>

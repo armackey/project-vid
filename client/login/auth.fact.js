@@ -25,7 +25,7 @@
           return localStorageService.set('dating-token', token);
         },
 
-        getTokenLocalStorage: function(token) {
+        getTokenLocalStorage: function() {
          return localStorageService.get('dating-token');
         },
 

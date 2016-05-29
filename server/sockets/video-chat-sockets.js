@@ -11,7 +11,7 @@ module.exports = function(io) {
       }
 
       if (clientsInRoom.length === 2) {
-        io.in(room).emit('users-connected'); // should start timer for both clients      
+        io.in(room).emit('users-connected'); // starts timer for both clients      
       }
 
     });
@@ -33,17 +33,21 @@ module.exports = function(io) {
     });
 
     socket.on('like-sent', function(data) {
-      userCtrl.likedMatch(data.matchId);
-      io.in(data.room).emit('notify-liked', data);
+      userCtrl.tallyLikes(data.matchId); // add a like to the matched user 
+      io.in(data.room).emit('notify-liked', data); 
     });
+
+
 
     socket.on('mutual-like', function(data) {
       console.log('its mutual');
-      userCtrl.itsMutual(data.room);
+      userCtrl.itsMutual(data);
       // in mutual-like, write a function that will find users in room from db
       // create chat from there
       io.in(data.room).emit('notify-its-mutual', data);
     });
+
+
 
   });
 };

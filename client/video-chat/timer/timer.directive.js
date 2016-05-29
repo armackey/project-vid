@@ -4,7 +4,7 @@
   angular.module('addTime', [])
     .directive('timer', timer);
 
-  function timer($timeout, $http, $interval, conToVidChat, authFact, $fancyModal) {
+  function timer($timeout, $http, $interval, conToVidChat, authFact) {
     return {
       restrict: 'E',
       scope: true,
@@ -12,11 +12,25 @@
       '<div class="round-progress" round-progress max="maxTime" current="counter" color={{counterColor}} bgcolor="#eaeaea" radius="100" ' +
       'stroke="20" semi="false" rounded="true" clockwise="true" responsive="false" duration="800" ' +
       ' animation="easeInOutQuart" animation-delay="0"></div> ' + 
-      '<button class="add-time" ng-click="addTime()">add time</button> ',
+      '<img src="./video-chat/shared/images/time-white.svg" class="add-time" ng-click="addTime()">',
       link: function(scope, ele, atts) {
+
+        
+        var wasCalled = false;
+        var current;
+        var mytimeout; 
+
+        scope.counter = 0;
+        scope.maxTime = scope.counter;
+
 
         scope.$on('chat-starts', function() {
           startTimer();
+        });
+
+        scope.$on('chat-ended', function() {
+          cancelTick();
+          console.log('chats over');
         });
 
         scope.$on('emit-timer', function() {
@@ -25,10 +39,6 @@
         });
         // #45ccce
 
-        var wasCalled = false;
-
-        scope.counter = 0;
-        scope.maxTime = scope.counter;
         
 
         function startTimer() {
@@ -38,25 +48,19 @@
           if (wasCalled)
             return;
 
-          var current;
-          var mytimeout = $timeout(onTimeout,1000);
-
-
-           function onTimeout() {
-            wasCalled = true;
-            scope.counter--;  
-            changeColor();
-            current = scope.counter;
-            mytimeout = $timeout(onTimeout,1000);
-            if (scope.counter <= 0) {
-              cancelTick();
-            }
+         function onTimeout() {
+          wasCalled = true;
+          scope.counter--;  
+          changeColor();
+          console.log(scope.counter);
+          current = scope.counter;
+          mytimeout = $timeout(onTimeout,1000);
+          if (scope.counter <= 0) {
+            cancelTick();
           }
+        }
 
-          function cancelTick() {
-            $timeout.cancel(mytimeout);
-            return;
-          }
+        mytimeout = $timeout(onTimeout,1000);
 
           // $interval(function() {
           //   changeColor();
@@ -66,6 +70,11 @@
             conToVidChat.requestAddTime({user: authFact.getUser(), message: 'Would like to add time.'});
           };    
           
+        }
+
+        function cancelTick() {
+          $timeout.cancel(mytimeout);
+          return;
         }
 
 

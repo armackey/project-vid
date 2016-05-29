@@ -5,9 +5,9 @@
     .module('app')
     .controller('videoChatCtrl', videoChatCtrl);  
     // $inject allows us to properly inject modules in our case the $scope object
-    videoChatCtrl.$inject = ['$interval', '$http', 'chatSocket', 'authFact', 'conToVidChat', '$scope', '$fancyModal', '$rootScope', '$state'];
+    videoChatCtrl.$inject = ['$http', 'chatSocket', 'authFact', 'conToVidChat', '$scope', '$rootScope', '$state'];
 
-    function videoChatCtrl($interval, $http, chatSocket, authFact, conToVidChat, $scope, $fancyModal, $rootScope, $state) {
+    function videoChatCtrl($http, chatSocket, authFact, conToVidChat, $scope, $rootScope, $state) {
 
       var self = this;
 
@@ -19,20 +19,25 @@
       var room;
       var convoStarted;
 
+      self.inCall = false;
+
+      self.currentUser = authFact.getUser();
+      self.match = {
+        name: conToVidChat.getMatchName() ? conToVidChat.getMatchName() : null,
+        id: null,
+      };
+
+      // if user leaves, we must stop timers for both users reset page.
+      // TODO: if user leaves page, reset isOnline and inCall on server
       $scope.$on('$destroy', function() {
-        // if one user leaves, use socket to find users in room and stop their videos and timer
-        // TODO: set a rootScope and detroy timer
-        // TODO: toggle inCall so that addtime and name disappear
-        self.inCall = false;
-        console.log('destroy controller');
+        handleEndingStream();
         chatSocket.emit('leaving-chat', {room: room});
-          endVideoStream();
       });
 
 
 
       chatSocket.on('peer-left-chat', function(data) {
-        endVideoStream();
+        handleEndingStream();
       });
 
       $rootScope.$on('users-connected', function() {
@@ -41,13 +46,7 @@
       });
 
 
-      self.inCall = false;
 
-      self.currentUser = authFact.getUser();
-      self.match = {
-        name: conToVidChat.getMatchName() ? conToVidChat.getMatchName() : null,
-        id: null,
-      };
 
       conToVidChat.connectToSocket();
 
@@ -60,6 +59,8 @@
         if (data.data.view) {
           $state.go(data.data.view);
         }
+        console.log(data);
+        conToVidChat.setLikes(data.data.likes);
         identity = data.data.identity;
         var accessManager = new Twilio.AccessManager(data.data.token);
 
@@ -75,9 +76,9 @@
 
       function clientConnected() {
         conToVidChat.searchForMatch().then(function(data) {
-          if (data.view) {
-            $state.go(data.view);
-          }
+          // if (data.view) {
+          //   $state.go(data.view);
+          // }
           conToVidChat.setSocketId(data);
           console.log(data);
           if (!data.message) {
@@ -95,6 +96,7 @@
           conversationsClient.on('invite', function(invite) {
             
             var id = invite;
+            console.log(invite);
             conToVidChat.receiveMatch(id);
             conToVidChat.setMatchId(id.from);
 
@@ -153,24 +155,26 @@
         });
 
         conversation.on('participantDisconnected', function(participant) {
-          self.inCall = false;
-          conversation.localMedia.stop();
+          // handleEndingStream();
           log("Participant '" + participant.identity + "' disconnected");
         });
 
         // When the conversation ends, stop capturing local video
         conversation.on('ended', function(conversation) {
           log("Connected to Twilio. Listening for incoming Invites as '" + conversationsClient.identity + "'");
-          conversation.localMedia.stop();
-          conversation.disconnect();
-          activeConversation = null;
+          // handleEndingStream();
         });
       }
 
-      function endVideoStream() {
+      function handleEndingStream() {
+        if (convoStarted === undefined || self.inCall === false)
+          return;
+        self.inCall = false;
         convoStarted.localMedia.stop();
         convoStarted.disconnect();
         activeConversation = null;
+        $rootScope.$broadcast('chat-ended');
+        console.log('someone left');
       }
 
       //  Local video preview

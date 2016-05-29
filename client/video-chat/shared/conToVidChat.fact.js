@@ -9,7 +9,7 @@
 
     function conToVidChat($http, chatSocket, authFact, $q, $rootScope, $fancyModal) {
 
-      var room, selectedUser, socketid, matchName, matchId,
+      var room, selectedUser, socketid, matchName, matchId, totalLikes,
       token = authFact.getTokenLocalStorage(),
       deferred = $q.defer();
 
@@ -18,7 +18,11 @@
       }); 
 
       chatSocket.on('sent-request', function(data) { 
-        $fancyModal.open({templateUrl: './video-chat/add-time-modal/add-time-modal.html'});
+        $fancyModal.open({
+          templateUrl: './video-chat/add-time-modal/add-time-modal.html',
+          showCloseButton: false,
+          closeOnOverlayClick: false,
+        });
       });
 
       return {
@@ -38,6 +42,7 @@
 
         receiveMatch: function(id) { // user whos waiting to be matched.. didn't find a match at first
           $http.put('/receiveMatch', id).then(function(user) {
+            console.log(user);
             matchName = user.data.name;
             room = user.data.room; 
           });
@@ -66,7 +71,6 @@
         },
 
         setMatchId: function(myMatch) {
-          console.log(myMatch);
           matchId = myMatch;
         },
 
@@ -87,8 +91,16 @@
         },
 
         connectToSocket: function() {
-          chatSocket.emit('connected', token.token);
+          chatSocket.emit('connected', authFact.getTokenLocalStorage().token);
         },
+
+        setLikes: function(likes) {
+          totalLikes = likes;
+        },
+
+        getLikes: function() {
+          return totalLikes;
+        }
 
       };
 

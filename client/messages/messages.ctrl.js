@@ -8,10 +8,23 @@
     messageCtrl.$inject = ['$http', '$timeout', '$interval', 'chatSocket', 'authFact'];
     
     function messageCtrl($http, $timeout, $interval, chatSocket, authFact) {
-
+      
       chatSocket.on('greeting-from-server', function(data) {
         console.log(data);
       }); 
+
+      var self = this;
+
+      self.threads = [
+        {
+          name: 'ashley',
+          snippet: 'hey there!'
+        },
+        {
+          name: 'brittney',
+          snippet: 'miss you!'
+        }
+      ];  
 
       // chatSocket.emit('greeting-from-client', 'wow'); 
 

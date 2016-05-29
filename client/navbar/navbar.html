@@ -2,6 +2,9 @@
   <nav class="navbar">
     <ul>
       <li class="nav-items">Meet Real People In Real Time</li>
+      <li class="links active" ui-sref-active="active"  ng-show="nav.loggedIn" ng-repeat="page in nav.pages">
+        <a ui-sref="{{page.url}}"> {{ page.name }}</a>
+      </li>
       <button ng-hide="nav.loggedIn" class="nav-items" ng-click="nav.login()">facebook login</button>
       <button ng-show="nav.loggedIn" class="nav-items" ng-click="nav.logOut()">logout</button>
     </ul>

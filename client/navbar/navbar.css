@@ -18,6 +18,40 @@ nav > ul > li {
   top: 10px;
 }
 
+.links {
+  margin: 0px 5px 0px 5px;
+  position: relative;
+  left: 70px;
+  top: 10px;
+}
+
+.links > a {
+  text-decoration: none;
+  color: white;
+}
+
+.active {
+  border-bottom: 2px solid white;
+  border-left: none;
+  border-top: none;
+  margin-bottom: 40px;
+  animation-name: nav;
+  animation-duration: .5s;
+}
+
+@keyframes nav {
+  from {  
+  -webkit-filter:blur(1px);
+  -moz-filter:blur(1px);
+  filter:blur(1px);
+}
+  to {
+    -webkit-filter:blur(0px);
+    -moz-filter:blur(0px);
+    filter:blur(0px);
+  }
+}
+
 button.nav-items {
   float: right;
   margin-right: 40px;

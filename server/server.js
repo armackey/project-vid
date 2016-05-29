@@ -4,7 +4,6 @@ var express = require('express');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
-var User = require('./models/user.model');
 var app = express();
 var session = require('express-session');
 var http = require('http').Server(app);
