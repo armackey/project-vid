@@ -1,8 +1,12 @@
 <div ng-include src="'./navbar/navbar.html'"></div>
 
-<div>
-  <div class="threads" ng-repeat="thread in msg.threads">
-    <div class="name">{{thread.name}} </div>
-    <div class="snippet">{{thread.snippet}} </div>
+<div  ng-repeat="thread in msg.threads track by $index">
+  <div class="threads">
+    <a ui-sref="thread({id: thread.id})" class="snippet" ng-click="msg.threadClicked(thread.id, thread.from)">
+      {{thread.message}} 
+      -{{thread.from}} 
+    </a>
   </div>
 </div>
+
+

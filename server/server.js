@@ -34,8 +34,10 @@ app.use(session({
 // require('./config/passport')(passport);
 require('./sockets/socket')(io);
 require('./sockets/video-chat-sockets')(io);
+require('./sockets/messages-sockets')(io);
 
 app.use(require('./routes/user.routes'));
+app.use(require('./routes/message.routes'));
 
 // app.use(function (req, res, next) {
 //   // Website you wish to allow to connect

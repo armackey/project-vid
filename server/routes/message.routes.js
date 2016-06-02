@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var msg = require('../routes/message.routes');
+var msgCtrl = require('../controllers/message.ctrl');
 
-router.get('/msg', msg.getMessages);
+router.put('/threads', msgCtrl.getThreads);
+router.put('/getMessages', msgCtrl.getMessages);
 
 module.exports = router;

@@ -3,18 +3,12 @@ var Schema = mongoose.Schema;
 
 var MessageSchema = new Schema({
   content: [{
-    created_at: {type: Date, default: Date.now},
-    message: String  
+    from: String,  
+    message: String,
+    created_at: {type: Date, default: Date.now}
   }],
-  // name: String,
-  room: String,
-  
-  msg_created: {type: Date, default: Date.now},
-
-  
+  created_at: {type: Date, default: Date.now},
   created_by: [{type: Schema.Types.ObjectId, ref: 'User'}]
-
-
 });
 
 module.exports = mongoose.model('Message', MessageSchema);

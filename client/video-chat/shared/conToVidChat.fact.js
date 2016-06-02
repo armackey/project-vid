@@ -10,8 +10,9 @@
     function conToVidChat($http, chatSocket, authFact, $q, $rootScope, $fancyModal) {
 
       var room, selectedUser, socketid, matchName, matchId, totalLikes,
-      token = authFact.getTokenLocalStorage(),
-      deferred = $q.defer();
+          token = authFact.getTokenLocalStorage(),
+          deferred = $q.defer();
+
 
       $rootScope.$on('users-connected', function() {
         $rootScope.$broadcast('chat-starts'); 
@@ -27,6 +28,7 @@
 
       return {
         
+        isAvail: false,
         sentLike: false, 
         madeRequest: false, // if made request to add time you'll see a different modal
         inCall: false,
@@ -46,6 +48,17 @@
             matchName = user.data.name;
             room = user.data.room; 
           });
+        },
+
+        isAvailToChat: function(avail) {
+          var self = this;
+          $http.put('/availToChat', {token: token.token, avail: avail}).then(function(data) {
+            self.isAvail = data.data.avail;
+          });
+        },
+
+        getAvail: function() {
+          return this.isAvail;
         },
 
         setSocketId: function(socket) {
@@ -88,10 +101,6 @@
 
         enterRoom: function() {
           chatSocket.emit('enter-room', room);
-        },
-
-        connectToSocket: function() {
-          chatSocket.emit('connected', authFact.getTokenLocalStorage().token);
         },
 
         setLikes: function(likes) {

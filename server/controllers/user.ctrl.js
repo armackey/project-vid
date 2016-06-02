@@ -6,34 +6,28 @@ var roomStore = {};
 
 require('dotenv').load();
 
+exports.itsMutual = function(room) {
 
-function setUsersInRoom(room, users) {
-  roomStore[room] = users;
-}
+  var users;
 
-exports.getUsersInRoom = function(room) {
-  return roomStore[room];
+  for (var key in roomStore) {
+    if (key === room) {
+      users = [roomStore[key][0].id, roomStore[key][1].id];
+    }
+  }
+
+  var msg = new Message();
+
+  msg.content = {
+    message: 'Yay! You two liked each other! Continue the conversation.',
+    from: 'Blur'
+  };
+
+  msg.created_by = users;
+  msg.save();
+
 };
 
-
-User.findOne({'name': 'Allen Redman Mackey'}, function(err, user) {
-
-  // user.save(function(err) {
-  //   // if (err) 
-  //   //   throw err;
-  //   console.log('saved message');
-  //   console.log(user);
-  // });
-
-  // var msg = new Message();
-  // msg.content.message = 'test';
-  // msg.save();
-  // Message.find({}, function(err, msgs) {
-  //   console.log(msgs);
-  // });
-
-
-});
 
 exports.setOffline = function(socketid) {
   User.find({'socketid': socketid}, function(err, user) {
@@ -43,6 +37,7 @@ exports.setOffline = function(socketid) {
 
     user[0].socketid = '';
     user[0].inCall = false;
+    user[0].available = false;
     user[0].isOnline = false;
     user[0].save(function(err) {
       if (err) throw err;
@@ -59,19 +54,6 @@ exports.tallyLikes = function(userid) {
       if (err) throw err;
     });
   });
-};
-
-exports.itsMutual = function(room) {
-  for (var key in roomStore) {
-    if (key === room) {
-      // do something amazeBALLLLLLSSSSSSSSSSSSSSSŠ=====================
-      console.log(room);
-    }
-  }
-};
-
-exports.inCall = function(socketid) {
-  // build toggle for setting someone in a call
 };
 
 exports.isOnline = function(token, socketid) {
@@ -107,18 +89,7 @@ exports.receiveMatch = function(req, res) {
   }
 };
 
-/*
-Load Twilio configuration from .env config file - the following environment
-variables should be set:
-process.env.TWILIO_ACCOUNT_SID
-process.env.TWILIO_API_KEY
-process.env.TWILIO_API_SECRET
-process.env.TWILIO_CONFIGURATION_SID
 
-Generate an Access Token for a chat application user - it generates a random
-username for the client requesting a token, and takes a device ID as a query
-parameter.
-*/
 exports.getToken = function(req, res) {
   var myToken = req.body.token;
   if (auth(myToken, res) === false) {
@@ -143,6 +114,9 @@ exports.getToken = function(req, res) {
     grant.configurationProfileSid = process.env.TWILIO_CONFIGURATION_SID;
     token.addGrant(grant);
     // Serialize the token to a JWT string and include it in a JSON response
+    user.available = true;
+    user.save();
+
     res.send({
       identity: identity,
       token: token.toJwt(),
@@ -242,6 +216,7 @@ exports.searchForMatch = function(req, res) {
     User.find({'isOnline': true})
       .where({'token': {$ne: token}})
       .where('inCall').equals(false)
+      .where('available').equals(true)
       .where('gender').equals(user.preferences.iWantToMeet)
       .where('age').gte(user.preferences.age.gt).lte(user.preferences.age.lt)
       .exec(doWeMatch);
@@ -266,35 +241,30 @@ exports.searchForMatch = function(req, res) {
         // TODO:***************************************************************************
         // change matches matches[0] to matches[randomNum] when there's more users
         // actually hash the email addresses you lazy bum!!!
-        var selectedUser = matches[0];
+        var matchedUser = matches[0];
 
         var callerEmail = user.email; // callerEmail prevents users email from being modified
-        var room = createPrivateRoom(user, matches[0]);
-        setUsersInRoom(room, [{id: user.id, name: user.name}, {id: matches[0].id, name: matches[0].name}]);
+        var room = createPrivateRoom(user, matchedUser);
+        setUsersInRoom(room, [{id: user.id, name: user.name}, {id: matchedUser.id, name: matchedUser.name}]);
 
-        function storeRoom(room) {
-          // user.room = room;
-          // user.email = callerEmail;
-          user.inCall = true;
-          // selectedUser.room = room; // answering user gets the same room... duh..
-          selectedUser.inCall = true;
+        user.inCall = true;
+        matchedUser.inCall = true;
 
-          selectedUser.save(function(err) {
-            if (err) throw err;
-          });
-          user.save(function(err) {
-            if (err) throw err;
-          });
-        }
+        matchedUser.save(function(err) {
+          if (err) throw err;
+        });
 
-        storeRoom(room);
+        user.save(function(err) {
+          if (err) throw err;
+        });
+
 
         var sayHi = {
           typeUser: 'i am calling',
           socketid: user.socketid,
           room: room,
-          name: selectedUser.name,
-          id: selectedUser._id
+          name: matchedUser.name,
+          id: matchedUser._id
         };
 
         res.send(sayHi);  // sends the calling user information
@@ -303,11 +273,34 @@ exports.searchForMatch = function(req, res) {
   });
 };  
 
+function setUsersInRoom(room, users) {
+  roomStore[room] = users;
+}
+
 
 function createPrivateRoom(caller, answer) {
   return caller.email+answer.email;
 }
 
+exports.toggleAvail = function(req, res) {
+  var token = req.body.token,
+      avail = req.body.avail;
+
+  if (auth(token, res) === false) {
+    return;
+  }
+
+  User.findOne({token: token}, function(err, user) {
+
+    user.available = avail;
+    user.save(function(err, user) {
+      if (err) throw err;
+      res.send({avail: avail});
+    });
+  });
+
+
+};
 
 
 
@@ -320,9 +313,9 @@ exports.preferences = function(req, res) {
     console.log('something missing');
     return;
   }
-  var pref = req.body.preferences;
-  var gender = req.body.gender;
-  var age = req.body.myAge;
+  var pref = req.body.preferences,
+      gender = req.body.gender,
+      age = req.body.myAge;
 
   
 

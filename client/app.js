@@ -8,7 +8,8 @@
       'addTime',
       'btford.socket-io',
       'LocalStorageModule',
-      'vesparny.fancyModal'
+      'vesparny.fancyModal',
+      'luegg.directives'
     ])
     .config(['$httpProvider', '$stateProvider', '$urlRouterProvider', '$locationProvider', function($httpProvider, $stateProvider, $urlRouterProvider, $locationProvider) {
       
@@ -39,7 +40,7 @@
       });
 
       $stateProvider
-        .state('messages.id', {
+        .state('thread', {
           url: '/messages/:id',
           templateUrl: '/messages/messages.id.html',
           controller: 'messageCtrl',
@@ -57,7 +58,7 @@
       $urlRouterProvider.otherwise('/');
       
     }])
-    .run(['$rootScope', 'authFact', 'localStorageService', '$state', function($rootScope, authFact, localStorageService, $state) {
+    .run(['$rootScope', 'authFact', 'localStorageService', '$state', '$location', 'msgFact', 'chatSocket', 'conToVidChat', function($rootScope, authFact, localStorageService, $state, $location, msgFact, chatSocket, conToVidChat) {
       $rootScope.$on('$stateChangeStart', function(event, toState, toParams, prevRoute, fromParams) {
 
         var localStore = localStorageService.get('dating-token');
@@ -69,6 +70,23 @@
         if (toState.name === 'home') {
           return;
         } 
+        
+        // sets us to online
+        chatSocket.emit('connected', authFact.getTokenLocalStorage().token);
+
+        // we dont want to accept calls if we're not on the correct route
+        // toggles availability on server too
+        if (toState.name === 'video-chat' && !conToVidChat.getAvail()) {
+          conToVidChat.isAvailToChat(true);
+        } else if (toState.name !== 'video-chat' && conToVidChat.getAvail()) {
+          conToVidChat.isAvailToChat(false);
+        }
+        
+        // on page refresh gets thread id from local storage and makes request to server for thread
+        if (toState.name === 'thread' && msgFact.getMessages().length === 0) {
+          var id = msgFact.getThreadItems().threadId;
+          msgFact.requestMessages(id);
+        }
   
         if (!localStore) {
           console.log('not logged in');

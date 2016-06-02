@@ -1,1 +1,17 @@
 <div ng-include src="'./navbar/navbar.html'"></div>
+
+<div id="other-name">Conversation with {{msg.otherUser}}</div>
+
+<ol class="messages-container" scroll-glue>
+
+  <li class="threads" ng-repeat="message in msg.messages track by $index" ng-class=" message.from === msg.currentUser ? 'self' : 'other' ">
+    
+    <div class="messages">
+      {{message.message}} 
+    </div>
+
+  </li>
+</ol>
+
+<textarea rows="4" cols="50" placeholder="say something nice" ng-model="msg.saySomething" type="text"> </textarea>
+<button id="send-button" ng-click="msg.sendMessage();">send</button>

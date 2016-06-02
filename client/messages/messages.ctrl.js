@@ -5,30 +5,63 @@
     .module('app')
     .controller('messageCtrl', messageCtrl);
 
-    messageCtrl.$inject = ['$http', '$timeout', '$interval', 'chatSocket', 'authFact'];
+    messageCtrl.$inject = ['$http', 'chatSocket', 'authFact', 'msgFact'];
     
-    function messageCtrl($http, $timeout, $interval, chatSocket, authFact) {
+    function messageCtrl($http, chatSocket, authFact, msgFact) {
+
+      var self = this,
+          token = authFact.getTokenLocalStorage();
+
       
-      chatSocket.on('greeting-from-server', function(data) {
+      self.threads = [];
+      self.messages = msgFact.getMessages();
+      self.currentUser = authFact.getUser();
+      self.otherUser = msgFact.getThreadItems().threadName;
+
+
+      chatSocket.on('message-receive', function(data) {
+        self.messages.push(data);
         console.log(data);
-      }); 
+      });
 
-      var self = this;
+      msgFact.requestThreads().then(function(data) {
+        var threads = data.data;
+        for (var i = 0; i < threads.length; i++) {
+          orderThreads(threads[i].messages, threads[i].id);
+        }    
+      });
 
-      self.threads = [
-        {
-          name: 'ashley',
-          snippet: 'hey there!'
-        },
-        {
-          name: 'brittney',
-          snippet: 'miss you!'
+      // will display last message sent from other user
+      function orderThreads(messages, id) {
+        for (var i = messages.length - 1; i >= 0; i--) {
+          if (messages[i].from !== self.currentUser) {
+            self.threads.push({id: id, message: messages[i].message, from: messages[i].from});
+            break;
+          }
         }
-      ];  
+      }
+      
+      self.threadClicked = function(id, threadName) {  
+        msgFact.requestMessages(id);
+        msgFact.storeThreadItems({threadId: id, threadName: threadName});
+      };
 
-      // chatSocket.emit('greeting-from-client', 'wow'); 
+      self.sendMessage = function() {
+        if (self.saySomething === '' || self.saySomething === undefined) {
+          return;
+        }
 
-      // chatSocket.emit('connected', 'user says hi');
+        self.message = {
+          from: authFact.getUser(),
+          message: self.saySomething,
+          threadId: msgFact.getThreadItems().threadId
+        };
+
+        self.messages.push(self.message);
+
+        chatSocket.emit('send-message', self.message);
+        self.saySomething = '';
+      };
 
     }
 

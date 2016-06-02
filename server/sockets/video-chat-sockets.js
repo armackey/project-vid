@@ -3,6 +3,7 @@ var userCtrl = require('../controllers/user.ctrl');
 module.exports = function(io) {
   io.on('connection', function(socket) {
     socket.on('enter-room', function(room) {
+
       var clientsInRoom = io.sockets.adapter.rooms[room];
       socket.join(room);
       
@@ -42,8 +43,6 @@ module.exports = function(io) {
     socket.on('mutual-like', function(data) {
       console.log('its mutual');
       userCtrl.itsMutual(data);
-      // in mutual-like, write a function that will find users in room from db
-      // create chat from there
       io.in(data.room).emit('notify-its-mutual', data);
     });
 
