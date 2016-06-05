@@ -10,15 +10,20 @@
     function msgFact($http, chatSocket, authFact, $q, $rootScope, localStorageService) {
 
       var self = this,
-          token = authFact.getTokenLocalStorage(),
           messagesArray = [],
-          threadId;
+          newMessageCount = 0,
+          token;
+
 
       return {
 
         requestForMessagesSent: false,
+        isIncremented: false,
 
         requestThreads: function() {
+          if (!token) {
+            token = authFact.getTokenLocalStorage();
+          }
 
           var deferred = $q.defer();
           this.requestForMessagesSent = false;
@@ -46,7 +51,11 @@
           $http.put('/getMessages', {id: id}).then(function(data) {
             var messages = data.data.content;
             for (var i = 0; i < messages.length; i++) {
-              messagesArray.push({message: messages[i].message, from: messages[i].from});
+              if (messages[i].unread && newMessageCount > 0) {
+                newMessageCount--;
+              }
+              messagesArray.push({message: messages[i].message, from: messages[i].from, date: messages[i].created_at});
+              $rootScope.$emit('new-message-count');
             }
           });
         },
@@ -61,6 +70,27 @@
 
         getThreadItems: function(id) {
           return localStorageService.get('dating-token.threadItems');
+        },
+
+        getMessageCount: function() {
+          // this function gets call a lot when clicked on thread... have to figure out why...
+          if (newMessageCount < 1) {
+            return;
+          }
+          // console.log('line 80 msg.fact');
+          // console.log('newMessageCount', newMessageCount);
+          return newMessageCount;
+        },
+
+        resetMessageCount: function() {
+          newMessageCount = 0;
+        },
+
+        incrementMessageCount: function() {
+          console.log('ran');
+          newMessageCount++;  
+          console.log('newMessageCount', newMessageCount);
+          $rootScope.$broadcast('new-message-count');
         }
 
       };

@@ -1,7 +1,9 @@
 <div ng-controller="navbarCtrl as nav">
   <nav class="navbar">
+
     <ul>
       <li class="nav-items">Meet Real People In Real Time</li>
+      <li id="message-count" ng-model="nav.newMessageCount"> {{nav.newMessageCount}} </li>
       <li class="links active" ui-sref-active="active"  ng-show="nav.loggedIn" ng-repeat="page in nav.pages">
         <a ui-sref="{{page.url}}"> {{ page.name }}</a>
       </li>

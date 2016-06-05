@@ -116,7 +116,7 @@ exports.getToken = function(req, res) {
     // Serialize the token to a JWT string and include it in a JSON response
     user.available = true;
     user.save();
-
+    console.log('token');
     res.send({
       identity: identity,
       token: token.toJwt(),
@@ -216,7 +216,7 @@ exports.searchForMatch = function(req, res) {
     User.find({'isOnline': true})
       .where({'token': {$ne: token}})
       .where('inCall').equals(false)
-      .where('available').equals(true)
+      // .where('available').equals(true)
       .where('gender').equals(user.preferences.iWantToMeet)
       .where('age').gte(user.preferences.age.gt).lte(user.preferences.age.lt)
       .exec(doWeMatch);
@@ -266,6 +266,7 @@ exports.searchForMatch = function(req, res) {
           name: matchedUser.name,
           id: matchedUser._id
         };
+        console.log('search for match');
 
         res.send(sayHi);  // sends the calling user information
 

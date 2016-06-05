@@ -5,14 +5,21 @@
     .module('app')
     .controller('navbarCtrl', navbarCtrl); 
 
-    navbarCtrl.$inject = ['authFact', '$http', '$q', '$state', 'fbFact', 'conToVidChat', '$location'];
+    navbarCtrl.$inject = ['authFact', '$http', '$q', '$state', 'fbFact', 'conToVidChat', '$location', 'msgFact', '$rootScope'];
 
-    function navbarCtrl(authFact, $http, $q, $state, fbFact, conToVidChat, $location) {
+    function navbarCtrl(authFact, $http, $q, $state, fbFact, conToVidChat, $location, msgFact, $rootScope) {
       
       var self = this;
       
       self.loggedIn = authFact.getUser();
       self.locationActive = false;
+      // self.newMessageCount = msgFact.getMessageCount() === 0 ? '' : msgFact.getMessageCount();
+
+
+      $rootScope.$on('new-message-count', function(data) {
+        self.newMessageCount = msgFact.getMessageCount();
+      });
+
 
       self.pages = {
         messages: {

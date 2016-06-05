@@ -9,7 +9,8 @@
       'btford.socket-io',
       'LocalStorageModule',
       'vesparny.fancyModal',
-      'luegg.directives'
+      'luegg.directives',
+      'angularMoment'
     ])
     .config(['$httpProvider', '$stateProvider', '$urlRouterProvider', '$locationProvider', function($httpProvider, $stateProvider, $urlRouterProvider, $locationProvider) {
       
@@ -63,24 +64,37 @@
 
         var localStore = localStorageService.get('dating-token');
 
+        if (toState.name === 'home') {
+          return;
+        }
+
+        if (!localStore) {
+          console.log('not logged in');
+          $state.go('home');
+          event.preventDefault(); 
+          return;       
+        } else {
+          var currentUser = localStore.username;
+          authFact.setUser(currentUser);
+        }     
+
         if (localStore !== null && toState.requiresLogin === false && prevRoute.name !== "") {
+          console.log('hit');
           $state.go(prevRoute.name);
         }
 
-        if (toState.name === 'home') {
-          return;
-        } 
+
         
         // sets us to online
         chatSocket.emit('connected', authFact.getTokenLocalStorage().token);
 
-        // we dont want to accept calls if we're not on the correct route
+        // we dont want to accept calls if we're not on the correct view
         // toggles availability on server too
-        if (toState.name === 'video-chat' && !conToVidChat.getAvail()) {
-          conToVidChat.isAvailToChat(true);
-        } else if (toState.name !== 'video-chat' && conToVidChat.getAvail()) {
-          conToVidChat.isAvailToChat(false);
-        }
+        // if (toState.name === 'video-chat' && !conToVidChat.getAvail()) {
+        //   conToVidChat.isAvailToChat(true);
+        // } else if (toState.name !== 'video-chat' && conToVidChat.getAvail()) {
+        //   conToVidChat.isAvailToChat(false);
+        // }
         
         // on page refresh gets thread id from local storage and makes request to server for thread
         if (toState.name === 'thread' && msgFact.getMessages().length === 0) {
@@ -88,14 +102,7 @@
           msgFact.requestMessages(id);
         }
   
-        if (!localStore) {
-          console.log('not logged in');
-          $state.go('home');
-          event.preventDefault();        
-        } else {
-          var currentUser = localStore.username;
-          authFact.setUser(currentUser);
-        }     
+
             
       });
 

@@ -1,20 +1,17 @@
 
 
+/* messages/:id page*********/
+
 .messages-container {
   overflow: auto;
   height: 200px;
-  background: #576B8E;
+  background: #29aba4;
   width: 700px;
   border-radius: 5px;
   position: relative;
   left: 40px;
 }
 
-.threads {
-  /*background: #4797C1;*/
-  /*width: 330px;*/
-  /*height: 40px;*/
-}
 
 li {
   display: flex;
@@ -29,6 +26,7 @@ li {
   margin: 5px;
   word-wrap: break-word;
   max-width: 375px;
+  /*height: 44px;*/
 }
 
 .self {
@@ -71,10 +69,15 @@ textarea {
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
   border-radius: 10px;
-  right: 108px;
-
+  right: 535px;
 }
 
+#on-enter {
+  position: relative;
+  top: 30px;
+  right: 130px;
+  display: inline-block;
+}
 
 
 #send-button:hover {
@@ -82,12 +85,69 @@ textarea {
   background-color: #2A74FD;
 }
 
+.message-date {
+  font-size: 12px;
+  color: #737F82;
+  position: relative;
+  top: 12px;
+  right: -5px;
+  float: right;
+
+}
 
 
+/* /messages page*********/
+.thread-list {
+  text-decoration: none;
+}
+.snippet {
+  margin: 10px;
+  border-radius: 5px;
+  max-width: 450px;
+  background-color: white;
+  padding: 5px;
+}
 
+.thread-from, .thread-date{
+  color: black;
+}
 
+.thread-message {
+  color: #5F696B;
+}
 
+.threads-container {
+  background: #29aba4;
+  width: 830px;
+  position: relative;
+  top: 20px;
+  left: 100px;
+  border-radius: 3px;
+  height: 750px;
+  padding: 5px;
+}
 
+.thread-date {
+  float: right;
+  position: relative; 
+  top: -14px;
+  font-size: 12px;
+  color: #737F82;
+}
 
+.unread, .read {
+  float: right;
+  display: inline-block;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px; 
+}
 
+.unread {
+  background-color: #407CEA;
+}
+
+.read { 
+  background-color: #BBD1D6;
+}
 
