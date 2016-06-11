@@ -9,8 +9,9 @@
 
     function msgFact($http, chatSocket, authFact, $q, $rootScope, localStorageService) {
 
-      var self = this,
-          messagesArray = [],
+      var messagesArray = [],
+          myPhoto = '',
+          otherPhoto = '',
           newMessageCount = 0,
           token;
 
@@ -36,7 +37,7 @@
             return deferred.promise;
         },
 
-        requestMessages: function(id) {
+        requestMessages: function(threadId, userId) {
           // if browser is refreshed, app.js will make request for current thread.
           // if state === 'thread' app.js will also make request for current thread.
           // below, we prevent duplicate requests
@@ -44,17 +45,27 @@
             return;
           }
 
+          var self = this;
           var deferred = $q.defer();
           messagesArray = [];
           this.requestForMessagesSent = true;
 
-          $http.put('/getMessages', {id: id}).then(function(data) {
-            var messages = data.data.content;
-            for (var i = 0; i < messages.length; i++) {
-              if (messages[i].unread && newMessageCount > 0) {
+          $http.put('/getMessages', {threadId: threadId, userId: userId}).then(function(data) {
+            var content = data.data.content;
+            for (var i = 0; i < content.messages.length; i++) {
+              if (!content.messages[i].message) continue;
+              if (content.messages[i].unread && newMessageCount > 0) {
                 newMessageCount--;
               }
-              messagesArray.push({message: messages[i].message, from: messages[i].from, date: messages[i].created_at});
+
+              messagesArray.push({
+                message: content.messages[i].message, 
+                from: content.messages[i].from, 
+                date: content.messages[i].created_at, 
+                // myPhoto: self.orderPhotos(content.users, userId), 
+                // otherPhotos: self.orderPhotos(content.users, userId)
+              });
+
               $rootScope.$emit('new-message-count');
             }
           });
@@ -62,6 +73,10 @@
 
         getMessages: function(id) {
           return messagesArray;
+        },
+
+        setRequestForMessagesSent: function() {
+          this.requestForMessagesSent = true;
         },
 
         storeThreadItems: function(items) {
@@ -77,8 +92,7 @@
           if (newMessageCount < 1) {
             return;
           }
-          // console.log('line 80 msg.fact');
-          // console.log('newMessageCount', newMessageCount);
+
           return newMessageCount;
         },
 
@@ -87,11 +101,23 @@
         },
 
         incrementMessageCount: function() {
-          console.log('ran');
           newMessageCount++;  
           console.log('newMessageCount', newMessageCount);
           $rootScope.$broadcast('new-message-count');
-        }
+        },
+
+        // seperate photos
+        // orderPhotos: function(photos, userId) {
+        //   for (var i = 0; i < photos.length; i++) {
+        //     if (photos[i].userId !== userId) {
+        //       otherPhoto = photos[i].photo;
+        //       return otherPhoto;
+        //     } else if (photos[i].userId === userId) {
+        //       myPhoto = photos[i].photo; 
+        //       return myPhoto;
+        //     }
+        //   }
+        // }
 
       };
 

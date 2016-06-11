@@ -6,6 +6,7 @@
       'ui.router',
       'angular-svg-round-progress',
       'addTime',
+      'takePic',
       'btford.socket-io',
       'LocalStorageModule',
       'vesparny.fancyModal',
@@ -100,6 +101,7 @@
         if (toState.name === 'thread' && msgFact.getMessages().length === 0) {
           var id = msgFact.getThreadItems().threadId;
           msgFact.requestMessages(id);
+          msgFact.setRequestForMessagesSent();
         }
   
 

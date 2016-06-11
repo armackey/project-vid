@@ -1,7 +1,8 @@
 (function() {
   'use strict';
 
-  angular.module('addTime', [])
+  angular
+    .module('addTime', [])
     .directive('timer', timer);
 
   function timer($timeout, $http, $interval, conToVidChat, authFact) {
@@ -13,7 +14,7 @@
       'stroke="20" semi="false" rounded="true" clockwise="true" responsive="false" duration="800" ' +
       ' animation="easeInOutQuart" animation-delay="0"></div> ' + 
       '<img src="./video-chat/shared/images/time-white.svg" class="add-time" ng-click="addTime()">',
-      link: function(scope, ele, atts) {
+      link: function(scope, elem, atts) {
 
         
         var wasCalled = false;
@@ -52,7 +53,6 @@
           wasCalled = true;
           scope.counter--;  
           changeColor();
-          console.log(scope.counter);
           current = scope.counter;
           mytimeout = $timeout(onTimeout,1000);
           if (scope.counter <= 0) {

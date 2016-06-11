@@ -9,9 +9,23 @@
   width: 700px;
   border-radius: 5px;
   position: relative;
-  left: 40px;
+  left: 15px;
+  display: inline-block;
 }
 
+#my-photo {
+  float: right;
+  position: relative;
+  left: -173px;
+  top: 173px;
+}
+
+#other-photo {
+  float: left;
+  position: relative;
+  top: 38px;
+  left: 7px;
+}
 
 li {
   display: flex;
@@ -43,7 +57,7 @@ li {
 #other-name {
   font-size: 20px;
   position: relative;
-  left: 40px;
+  left: 14px;
   top: 10px;
   display: inline;
 }
@@ -52,7 +66,7 @@ textarea {
   resize: none;
   border-radius: 2px;
   position: relative;
-  left: 45px;
+  left: 83px;
   width: 450px;
   height: 100px;
   font-size: 20px;
@@ -69,7 +83,7 @@ textarea {
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
   border-radius: 10px;
-  right: 535px;
+  right: 498px;
 }
 
 #on-enter {
@@ -92,7 +106,6 @@ textarea {
   top: 12px;
   right: -5px;
   float: right;
-
 }
 
 
@@ -100,16 +113,44 @@ textarea {
 .thread-list {
   text-decoration: none;
 }
+
+.other-photos, .my-photos, #my-photo, #other-photo {
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+}
+
+.other-photos {
+  float: left;
+  position: relative;
+  top: 0px;
+}
+
+.my-photos {
+  float: right;
+  position: relative;
+  right: 210px;
+  top: 30px;
+}
+
+
 .snippet {
   margin: 10px;
   border-radius: 5px;
-  max-width: 450px;
   background-color: white;
-  padding: 5px;
+  padding: 15px;
+  display: inline-block;
+  min-width: 450px;
 }
 
 .thread-from, .thread-date{
   color: black;
+}
+
+.thread-from {
+  position: relative;
+  top: -10px;
+  display: inline-block;
 }
 
 .thread-message {
@@ -130,7 +171,7 @@ textarea {
 .thread-date {
   float: right;
   position: relative; 
-  top: -14px;
+  top: 0px;
   font-size: 12px;
   color: #737F82;
 }
@@ -141,6 +182,9 @@ textarea {
   border-radius: 50%;
   width: 10px;
   height: 10px; 
+  position: relative;
+  top: -10px;
+  left: 10px;
 }
 
 .unread {

@@ -30,9 +30,9 @@
         // the other user sent the data obj with the persons name attached
         // if that name is the current user they need to know they have received a like
         if (data.matchedName === authFact.getUser()) {
-          handleLikeNotification('like receieved.');
           self.totalLikes+=1;
           self.likeReceived = true;
+          handleLikeNotification('like receieved.');
         } else {
           handleLikeNotification('like was sent');
         }
@@ -42,7 +42,7 @@
         self.notifyLiked = '';
         self.notifyLiked += text;
         if (self.likeReceived && self.clickedLike) {
-          chatSocket.emit('mutual-like', conToVidChat.getRoom());
+          $rootScope.$broadcast('mutual-like');
         }
       }
 

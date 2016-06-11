@@ -2,32 +2,68 @@ var User = require('../models/user.model');
 var Message = require('../models/message.model');
 var AccessToken = require('twilio').AccessToken;
 var ConversationsGrant = AccessToken.ConversationsGrant;
+var Q = require('q');
 var roomStore = {};
 
 require('dotenv').load();
 
-exports.itsMutual = function(room) {
+exports.itsMutual = function(room, photo, name, id) {
 
   var users;
+  
 
   for (var key in roomStore) {
     if (key === room) {
       users = [roomStore[key][0].id, roomStore[key][1].id];
     }
   }
+  
+  updateThread(users, name, photo, id).then(function(thread) {
+    thread.content.messages.push({from: name});
+    thread.content.users.push({userId: id, photo: photo});
+    thread.save();
+  });
+};
+
+function updateThread(users, name, photo, id) {
+
+  var defferred = Q.defer();
+
+  Message.findOne({'created_by': users}, function(err, thread) {
+    if (err) throw err;
+    if (thread !== null && thread.content.users.length >= 3) { // checks if thread is already created with both users
+      return;
+    }
+
+    if (thread === null) { // if null create thread
+      createThread(users, name, photo, id);
+      defferred.reject(thread);
+    } else {
+      defferred.resolve(thread);
+    }
+
+  });
+  return defferred.promise;
+}
+
+function createThread(users, name, photo, id) {
+
+  Message.find({'created_by': users}, function(err, users) {
+    if (users) { // checks if users are already associated to a thread. if so, don't create new thread.
+      return;
+    }
+  });
 
   var msg = new Message();
 
-  msg.content = {
-    message: 'Yay! You two liked each other! Continue the conversation.',
-    from: 'Blur'
-  };
-
-  msg.created_by = users;
-  msg.save();
-
-};
-
+    msg.content.messages = {
+      message: 'Yay! You two liked each other! Continue the conversation. -Blur',
+    };
+    msg.content.messages.push({from: name});
+    msg.content.users.push({userId: id, photo: photo});
+    msg.created_by = users;
+    msg.save();
+}
 
 exports.setOffline = function(socketid) {
   User.find({'socketid': socketid}, function(err, user) {
@@ -154,6 +190,7 @@ exports.login = function(req, res) {
       // may need to add return and save here as well ***IF*** decided to send info for new users
 
       res.send({
+        id: user._id,
         view: 'video-chat',
         message: 'welcome back'
       });
@@ -172,14 +209,15 @@ exports.login = function(req, res) {
 
       newUser.save(function(err) {
         if (err) throw err;
+
+        res.send({
+          id: newUser._id,
+          view: 'settings', 
+          message: 'missing preferences'
+        }); 
       });
     }
-  
 
-    res.send({
-      view: 'settings', 
-      message: 'missing preferences'
-    }); 
   });
 };
 

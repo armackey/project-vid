@@ -10,6 +10,7 @@
     function navbarCtrl(authFact, $http, $q, $state, fbFact, conToVidChat, $location, msgFact, $rootScope) {
       
       var self = this;
+      var myInfo;
       
       self.loggedIn = authFact.getUser();
       self.locationActive = false;
@@ -51,22 +52,21 @@
         fbFact.facebookLogin().then(function(response) {
           
           var accessToken = FB.getAuthResponse();
-          var myInfo = response;
-          
-          console.log(myInfo);
 
+          myInfo = response;
           myInfo.token = accessToken.accessToken;
-          setUserInfo(myInfo);
 
           $http.post('/login', myInfo).then(function(data) {
             $state.go(data.data.view);
+            myInfo.id = data.data.id;
+            setUserInfo(myInfo);
           });
         });
       };
 
       function setUserInfo(user) {
         authFact.setUser(user.name);
-        authFact.setTokenLocalStorage({token: user.token, username: user.name});
+        authFact.setTokenLocalStorage({token: user.token, username: user.name, userId: user.id});
         console.log('setUserInfo');
       }
 

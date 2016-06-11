@@ -42,7 +42,7 @@ module.exports = function(io) {
 
     socket.on('mutual-like', function(data) {
       console.log('its mutual');
-      userCtrl.itsMutual(data);
+      userCtrl.itsMutual(data.room, data.photo, data.name, data.id);
       io.in(data.room).emit('notify-its-mutual', data);
     });
 

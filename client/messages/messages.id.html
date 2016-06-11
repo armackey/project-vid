@@ -2,6 +2,9 @@
 
 <div id="other-name">Conversation with {{msg.otherUser}}</div>
 
+<img id="other-photo" src="{{msg.otherPhoto}}" alt="">
+<img id="my-photo" src="{{msg.myPhoto}}" alt="">
+
 <ol class="messages-container" scroll-glue>
 
   <li ng-repeat="message in msg.messages track by $index" ng-class=" message.from === msg.currentUser ? 'self' : 'other' ">
