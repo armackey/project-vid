@@ -1,34 +1,55 @@
 (function() {
+  'use strict';
 
   angular
     .module('takePic', [])
-    .directive('picture', picture);
+    .directive('sayCheese', sayCheese);
 
-  function picture(chatSocket, conToVidChat, authFact) {
+  function sayCheese(chatSocket, conToVidChat, authFact, timerFact) {
     return {
-      restrict: 'E',
-      template: '<button ng-click="takePic()">Take Picture</button>' +
-                '<canvas id="canvas"></canvas>',
+      restrict: 'AE',
+      transclude: true,
+      template:
+      '<div ng-transclude><canvas id="myCanvas"></canvas></div>',
+      controller: function($scope) {
+        this.takePic = function() {
+          $scope.takePic();
+          console.log('say cheese');
+        };
+      },
+
       link: function(scope, elem, atts) {
+
 
         var myVideo,
             data,
             userId = authFact.getTokenLocalStorage().userId;
 
+        scope.isMutual = false;
+
         // TODO: if retake true/else....
 
         scope.$on('mutual-like', function() {
-          console.log('mutual-like');
-          scope.takePic();
+          scope.isMutual = true;
         });
 
         scope.takePic = function() {
 
-          var canvas  = elem.children()[1],
+          var canvas  = document.createElement('canvas'),
+              myCanvas = document.getElementById('myCanvas'),
               context = canvas.getContext('2d'),
               myVideo = document.getElementById('local-media').querySelector('video'),
-              width   = 320,
-              height  = 200;
+              width = 320,
+              height = 200;
+
+              myCanvas.appendChild(canvas);
+
+          // var canvas  = elem.children()[1],
+              // context = canvas.getContext('2d'),
+              // myVideo = document.getElementById('local-media').querySelector('video'),
+              // width   = 320,
+              // height  = 200;
+
 
           myVideo.setAttribute('width', width);
           myVideo.setAttribute('height', height);
@@ -45,7 +66,7 @@
           
           console.log(data.length);
 
-          chatSocket.emit('mutual-like', {room: conToVidChat.getRoom(), photo: data, name: authFact.getUser(), id: userId});
+          // chatSocket.emit('mutual-like', {room: conToVidChat.getRoom(), photo: data, name: authFact.getUser(), id: userId});
         };
 
         // remote video gets larger

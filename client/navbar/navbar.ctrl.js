@@ -27,14 +27,19 @@
           name: 'messages',
           url: 'messages'
         },
-        settings: {
-          name: 'settings',
-          url: 'settings'
-        },
         video: {
           name: 'video chat',
           url: 'video-chat'
         },
+        // profile: {
+        //   url: 'settings',
+        //   picture: authFact.getTokenLocalStorage().profilePic
+        // }
+      };
+
+      self.profile = {
+        url: 'myprofile',
+        picture: !authFact.getTokenLocalStorage() ? null : authFact.getTokenLocalStorage().profilePic
       };
 
        self.activeClass = function(arg) {
@@ -44,7 +49,6 @@
         }
 
         console.log('state changed');
-        // console.log($location.url());
         self.locationActive = true;
       };
 
@@ -59,6 +63,10 @@
           $http.post('/login', myInfo).then(function(data) {
             $state.go(data.data.view);
             myInfo.id = data.data.id;
+            myInfo.picture = data.data.picture;
+            
+            self.profile = data.data.picture;
+            console.log(self.profile);
             setUserInfo(myInfo);
           });
         });
@@ -66,7 +74,7 @@
 
       function setUserInfo(user) {
         authFact.setUser(user.name);
-        authFact.setTokenLocalStorage({token: user.token, username: user.name, userId: user.id});
+        authFact.setTokenLocalStorage({token: user.token, username: user.name, userId: user.id, profilePic: user.picture});
         console.log('setUserInfo');
       }
 

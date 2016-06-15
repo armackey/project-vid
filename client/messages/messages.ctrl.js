@@ -15,7 +15,6 @@
           myPhotos,
           userId = authFact.getTokenLocalStorage() === null ? null : authFact.getTokenLocalStorage().userId;
 
-      console.log(userId);
       self.threads = [];
       self.messages = msgFact.getMessages();
       self.currentUser = authFact.getUser();
@@ -37,6 +36,7 @@
         if (data.from === self.currentUser) {
           return; 
         }
+
         self.messages.push({message: data.message, from: data.from, date: data.created_at});
         findAndUpdateThread(data);
         
@@ -109,7 +109,7 @@
             self.threads.splice(i,1);
           }
         }
-        self.threads.unshift({id: newThread.id, message: checkMessageLength(newThread.message), from: newThread.from, unread: newThread.unread, date: newThread.created_at});
+        self.threads.unshift({id: newThread.id, message: checkMessageLength(newThread.message), from: newThread.from, unread: newThread.unread, date: newThread.created_at, otherPhotos: newThread.otherPhoto, myPhotos: newThread.myPhoto});
       }
       
       self.threadClicked = function(id, threadName) {  
@@ -134,6 +134,8 @@
           from: authFact.getUser(),
           message: self.saySomething,
           unread: true,
+          otherPhoto: self.otherPhoto,
+          myPhoto: self.myPhoto,
           id: msgFact.getThreadItems().threadId,
           created_at: Date.now()
         };

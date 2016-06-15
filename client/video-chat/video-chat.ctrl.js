@@ -57,7 +57,7 @@
           $state.go(data.data.view);
         }
         console.log(data);
-        conToVidChat.setLikes(data.data.likes);
+        conToVidChat.setLikes(data.data.total_likes);
         identity = data.data.identity;
         var accessManager = new Twilio.AccessManager(data.data.token);
 

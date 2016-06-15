@@ -5,7 +5,7 @@
   <div ng-repeat="thread in msg.threads track by $index">
   
     <a ui-sref="thread({id: thread.id})" class="thread-list" ng-click="msg.threadClicked(thread.id, thread.from)">
-      <img class="my-photos" src="{{thread.otherPhotos}}" alt=""/>
+      <img class="other-photos" src="{{thread.otherPhotos}}" alt=""/>
         <div class="snippet" >
           <div ng-class=" thread.unread ? 'unread' : 'read' "></div>
           
@@ -13,7 +13,7 @@
           <div class="thread-message">{{thread.message}}</div> 
           <time class="thread-date" am-time-ago="thread.date"></time>
         </div> 
-      <img class="other-photos" src="{{thread.myPhotos}}" alt="">
+      <img class="my-photos" src="{{thread.myPhotos}}" alt="">
       
     </a>
 

@@ -5,25 +5,45 @@ nav {
 }
 
 nav > ul {
-  margin: 0;
+  margin: 0px 5px;
 }
 
 nav > ul > li {
   display: inline-block;
   list-style-type: none;
-  position: absolute;
+  /*position: absolute;*/
 }
 
-.nav-items {
+.title {
+  display: inline;
   position: relative;
-  top: 10px;
+  top: -9px;
 }
 
-.links {
-  margin: 0px 5px 0px 5px;
+#profile > img {
+  border-radius: 50%;
+  cursor: pointer;
+  width: 37px;
+  position: relative;
+  left: 330px;
+  top: -6px;
+}
+
+.auth {
+  position: relative;
+  top: 5px !important;
+  left: -80px;
+  cursor: pointer;
+  float: right;
+  margin-right: 15px;
+}
+
+
+ul {
   position: relative;
   left: 70px;
-  top: 10px;
+  top: 7px;
+  display: inline;
 }
 
 #message-count {
@@ -32,9 +52,15 @@ nav > ul > li {
   top: 3px;
 }
 
+.links {
+  top: -16px;
+  position: relative;
+}
+
 .links > a {
   text-decoration: none;
   color: white;
+  margin: 0px 5px;
 }
 
 .active {

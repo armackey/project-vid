@@ -6,6 +6,7 @@ var UserSchema = new Schema({
   token: String,
   socketid: String,
   name: String,
+  picture: String,
   isOnline: {type: Boolean, default: false},
   email: String,
   inCall: {type: Boolean, default: false},
@@ -15,7 +16,42 @@ var UserSchema = new Schema({
   userTaken: {type: Boolean, default: false},
   location: {type: [Number]},
   created_at: {type: Date, default: Date.now},
-  likes: {type: Number, default: 0},
+  block_list: [
+    {
+      name: String
+    },
+    {
+      user_id: String
+    },
+    {
+      created_at: {type: Date, default: Date.now}
+    }
+  ],
+  people_met: [
+    {
+      name: String
+    },
+    {
+      user_id: String
+    },
+    {
+      liked: {type: Boolean, default: false}
+    },
+    {
+      mutual: {type: Boolean, default: false}
+    },
+    {
+      games_played: {
+        losses: {type: Number, default: 0},
+        wins: {type: Number, default: 0}
+      }
+    },
+    {
+      created_at: {type: Date, default: Date.now}
+    }
+  ],
+
+  total_likes: {type: Number, default: 0},
 
   
   message: {type: Schema.Types.ObjectId, ref: 'Message'},

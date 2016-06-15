@@ -13,17 +13,19 @@
     </div>
 
     <div id="remote-media"></div>
-    <div id="local-media"></div>
-    <timer></timer>
-
+    <div id="local-media" ng-class=" isMutual ? 'grow-local' : 'shrink-local' "></div>
     
+    <div say-cheese>
+        <div timer></div>
+    </div>
+    <div ng-show="isMutual"> Say Cheese!</div>
     <div id="liked-text">{{uL.notifyLiked}}</div>
     <i class="fa fa-heart-o heart" ng-hide="uL.clickedLike" ng-click="uL.iLikeYou();" aria-hidden="true"></i>
     <i class="fa fa-heart heart" ng-show="uL.clickedLike" aria-hidden="true"></i>
 
   </div>
   
-  <picture></picture>
+  
 
 </div>
 

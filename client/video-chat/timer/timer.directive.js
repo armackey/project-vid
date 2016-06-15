@@ -5,62 +5,76 @@
     .module('addTime', [])
     .directive('timer', timer);
 
-  function timer($timeout, $http, $interval, conToVidChat, authFact) {
+  function timer($timeout, $http, $interval, conToVidChat, authFact, $q) {
     return {
-      restrict: 'E',
-      scope: true,
+      restrict: 'AE',
+      require: '^sayCheese',
       template:
       '<div class="round-progress" round-progress max="maxTime" current="counter" color={{counterColor}} bgcolor="#eaeaea" radius="100" ' +
       'stroke="20" semi="false" rounded="true" clockwise="true" responsive="false" duration="800" ' +
-      ' animation="easeInOutQuart" animation-delay="0"></div> ' + 
+      ' animation="easeInOutQuart" animation-delay="0"></div> ' +
       '<img src="./video-chat/shared/images/time-white.svg" class="add-time" ng-click="addTime()">',
-      link: function(scope, elem, atts) {
+      link: function(scope, elem, atts, sayCheese) {
 
+  
         
-        var wasCalled = false;
-        var current;
+        var counterStarted = false;
+        var isPause = false;
+        var remaining;
         var mytimeout; 
 
         scope.counter = 0;
-        scope.maxTime = scope.counter;
 
 
         scope.$on('chat-starts', function() {
-          startTimer();
+          startTimer(60);
         });
 
         scope.$on('chat-ended', function() {
+          counterStarted = false;
           cancelTick();
           console.log('chats over');
         });
 
         scope.$on('emit-timer', function() {
           console.log('time should be added');
-          startTimer();
+          startTimer(60);
         });
         // #45ccce
 
-        
+        scope.$on('mutual-like', function(){
+          pauseCounter();
+        });
 
-        function startTimer() {
-          scope.counter += 60;
-          scope.maxTime = scope.counter;
-          changeColor();
-          if (wasCalled)
-            return;
-
-         function onTimeout() {
-          wasCalled = true;
-          scope.counter--;  
-          changeColor();
-          current = scope.counter;
-          mytimeout = $timeout(onTimeout,1000);
-          if (scope.counter <= 0) {
-            cancelTick();
-          }
+        function pauseCounter() {
+          var deferred = $q.defer();
+          remaining = scope.counter;
+          cancelTick();
+          counterStarted = false;
+          isPause = true;
+          deferred.resolve(startTimer(5));
+          return deferred.promise;
         }
 
-        mytimeout = $timeout(onTimeout,1000);
+        function resumeCounter() {
+          isPause = false;
+          counterStarted = false;
+          startTimer(remaining);
+        }
+
+        function startTimer(time) {
+          
+          if (counterStarted) {
+            scope.counter += time;  
+            return;
+          }
+          
+          scope.counter = time;
+          scope.maxTime = scope.counter;
+          changeColor();
+
+
+          mytimeout = $timeout(onTimeout,1000);
 
           // $interval(function() {
           //   changeColor();
@@ -70,6 +84,22 @@
             conToVidChat.requestAddTime({user: authFact.getUser(), message: 'Would like to add time.'});
           };    
           
+        }
+
+        function onTimeout() {
+          
+          counterStarted = true;
+          scope.counter--;  
+          console.log(scope.counter);
+          changeColor();
+          mytimeout = $timeout(onTimeout,1000);
+          if (scope.counter <= 0) {
+            cancelTick();
+            if (isPause) {
+              sayCheese.takePic();
+              resumeCounter();
+            }
+          }
         }
 
         function cancelTick() {

@@ -1,4 +1,5 @@
 (function() {
+  'use strict';  
 
   angular
     .module('app')
@@ -9,6 +10,8 @@
     function settingsCtrl(authFact, $http, $q, $state) {
       
       var self = this;
+      var token = authFact.getTokenLocalStorage();
+
       self.myName = authFact.getUser();
       
 
@@ -39,6 +42,10 @@
       for (var i = 18; i <= 99; i+=1) {
         self.ageRange.push({age: i});
       }
+
+      $http.put('/stats', token, function(data) {
+
+      });
         
 
       self.sendPref = function() {

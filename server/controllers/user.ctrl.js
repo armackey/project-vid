@@ -17,6 +17,8 @@ exports.itsMutual = function(room, photo, name, id) {
       users = [roomStore[key][0].id, roomStore[key][1].id];
     }
   }
+
+  handleMutualLikes(users, name, id);
   
   updateThread(users, name, photo, id).then(function(thread) {
     thread.content.messages.push({from: name});
@@ -56,14 +58,37 @@ function createThread(users, name, photo, id) {
 
   var msg = new Message();
 
-    msg.content.messages = {
-      message: 'Yay! You two liked each other! Continue the conversation. -Blur',
-    };
-    msg.content.messages.push({from: name});
-    msg.content.users.push({userId: id, photo: photo});
-    msg.created_by = users;
-    msg.save();
+  msg.content.messages = {
+    message: 'Yay! You two liked each other! Continue the conversation. -Blur',
+  };
+  msg.content.messages.push({from: name});
+  msg.content.users.push({userId: id, photo: photo});
+  msg.created_by = users;
+  msg.save();
 }
+// [575a75aaea44e4d867bbc9f2,575a75a3ea44e4d867bbc9f1]
+function handleMutualLikes(users, name, userId) {
+  
+  User.find({'_id': {$in: users}}, function(err, userArray) {
+    
+    var user = userArray.filter(function(elem, i, array) {
+      return elem.id !== userId ? elem : false; // return the user in the list that isn't currentUser
+    }).map(function(elem, i) {
+      console.log(elem);
+      return elem.people_met; // return list of people they've met
+    }).filter(function(elem, i) {
+      // console.log(elem);
+      if (elem.user_id === userId) {
+        elem.push({name:name, mutual: true, liked: true});
+      }
+      //return elem.user_id === userId ? elem : false; // find and return currentUser from the list of people theyve met.
+    });
+
+    console.log(user);
+  });
+}
+
+handleMutualLikes(['575a75aaea44e4d867bbc9f2','575a75a3ea44e4d867bbc9f1'], 'name', '575a75a3ea44e4d867bbc9f1');
 
 exports.setOffline = function(socketid) {
   User.find({'socketid': socketid}, function(err, user) {
@@ -85,7 +110,7 @@ exports.tallyLikes = function(userid) {
   User.findOne({'_id': userid}, function(err, user) {
     if (err) throw err;
     if (!user) return;
-    user.likes+=1;
+    user.total_likes+=1;
     user.save(function(err) {
       if (err) throw err;
     });
@@ -115,6 +140,7 @@ exports.receiveMatch = function(req, res) {
     if (Array.isArray(roomStore[room])) {
       for (var user = 0; user < roomStore[room].length; user++) {
         if (roomStore[room][user].id === id) {
+          console.log(roomStore[room]);
           res.send({
             room: room,
             name: roomStore[room][user].name
@@ -157,7 +183,7 @@ exports.getToken = function(req, res) {
       identity: identity,
       token: token.toJwt(),
       name: user.name,
-      likes: user.likes
+      likes: user.total_likes
     });
 
   });
@@ -176,6 +202,7 @@ exports.login = function(req, res) {
       } 
       user.token = req.body.token;
       user.name  = req.body.name;
+      user.picture = req.body.picture.data.url;
       user.save(function(err) {
         if (err) throw err;
       });
@@ -192,7 +219,8 @@ exports.login = function(req, res) {
       res.send({
         id: user._id,
         view: 'video-chat',
-        message: 'welcome back'
+        message: 'welcome back',
+        picture: user.picture
       });
 
       return;
@@ -206,6 +234,7 @@ exports.login = function(req, res) {
       newUser.token = req.body.token; 
       newUser.name  = req.body.name;
       newUser.email = req.body.email;
+      newUser.picture = req.body.picture.data.url;
 
       newUser.save(function(err) {
         if (err) throw err;
@@ -213,7 +242,8 @@ exports.login = function(req, res) {
         res.send({
           id: newUser._id,
           view: 'settings', 
-          message: 'missing preferences'
+          message: 'missing preferences',
+          picture: newUser.picture
         }); 
       });
     }
@@ -304,7 +334,6 @@ exports.searchForMatch = function(req, res) {
           name: matchedUser.name,
           id: matchedUser._id
         };
-        console.log('search for match');
 
         res.send(sayHi);  // sends the calling user information
 
@@ -388,6 +417,18 @@ function auth(token, res) {
     }
   });
 }
+
+exports.stats = function(req, res) {
+  var token = req.body.token;
+  console.log(token);
+  User.findOne({'token': token}, function(err, user) {
+    var stats = {};
+    stats.people_met = user.people_met;
+    stats.total_likes = user.total_likes;
+
+    res.send(stats);
+  });
+};
 
 
 

@@ -1,14 +1,20 @@
 <div ng-controller="navbarCtrl as nav">
   <nav class="navbar">
 
-    <ul>
-      <li class="nav-items">Meet Real People In Real Time</li>
+    <div class="nav-items title">Meet Real People In Real Time</div>
+
+    <ul ng-show="nav.loggedIn">
       <li id="message-count" ng-model="nav.newMessageCount"> {{nav.newMessageCount}} </li>
-      <li class="links active" ui-sref-active="active"  ng-show="nav.loggedIn" ng-repeat="page in nav.pages">
-        <a ui-sref="{{page.url}}"> {{ page.name }}</a>
+      <li class="links active" ui-sref-active="active" ng-repeat="page in nav.pages">
+        <a ui-sref="{{page.url}}"> {{ page.name }} <!--  <img id="profile" src={{page.picture}} alt=""> --> </a> 
       </li>
-      <button ng-hide="nav.loggedIn" class="nav-items" ng-click="nav.login()">facebook login</button>
-      <button ng-show="nav.loggedIn" class="nav-items" ng-click="nav.logOut()">logout</button>
+      <li id="profile" class="" ui-sref="{{nav.profile.url}}"><img src={{nav.profile.picture}} alt="profile picture"></li>
     </ul>
+
+    <ul>
+      <li ng-hide="nav.loggedIn" class="auth" ng-click="nav.login()">facebook login</li>
+      <li ng-show="nav.loggedIn" class="auth" ng-click="nav.logOut()">logout</li>
+    </ul>
+
   </nav>
 </div>

@@ -1,5 +1,5 @@
 (function() {
-  'use strict'    
+  'use strict'; 
   
   angular
     .module('app')
@@ -18,7 +18,7 @@
 
             if (response.authResponse) { 
                          
-              FB.api('/me', {fields: ['id', 'email', 'gender', 'link', 'locale', 'name', 'timezone', 'updated_time', 'verified']}, function(response) {
+              FB.api('/me', {fields: ['id', 'email', 'gender', 'link', 'locale', 'name', 'timezone', 'updated_time', 'picture']}, function(response) {
                 deferred.resolve(response);
               });
 

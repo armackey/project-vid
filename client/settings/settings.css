@@ -15,6 +15,23 @@
   display: inline;
 }
 
+.profile-container {
+  width: 650px;
+  height: 700px;
+  background-color: white;
+  border-radius: 2%;
+  position: relative;
+  top: 10px;
+  left: 60px;
+}
+
+p#preferences {
+  float: right;
+  position: relative;
+  left: -20px;
+  color: #45ccce;
+}
+
 .selections {
   display: inline;
   list-style: none;

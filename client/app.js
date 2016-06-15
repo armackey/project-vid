@@ -50,12 +50,21 @@
       });
 
       $stateProvider
-        .state('settings', {
-          url: '/settings',
-          templateUrl: '/settings/settings.html',
+        .state('preferences', {
+          url: '/preferences',
+          templateUrl: '/settings/preferences.html',
           controller: 'settingsCtrl',
           controllerAs: 'settingsCtrl',
       });
+
+      $stateProvider
+        .state('myprofile', {
+          url: '/my-profile',
+          templateUrl: '/settings/my-profile.html',
+          controller: 'settingsCtrl',
+          controllerAs: 'settingsCtrl',
+      });
+
       // $locationProvider.html5Mode(true).hashPrefix('!');   
       $urlRouterProvider.otherwise('/');
       

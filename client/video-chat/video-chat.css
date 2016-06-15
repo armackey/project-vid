@@ -17,7 +17,7 @@
 #local-media > video {
   border: 2px solid white;
   z-index: 5;
-  top: -59px;
+  top: 60px;
   left: 0px;
 }
 
@@ -30,17 +30,18 @@
 }
 
 .round-progress {
-  top: -242px;
-  left: 243px;
+  top: -350px;
+  left: 355px;
   position: relative;
   width: 50px !important;
   height: 200px;
+  z-index: 5;
 }
 
 .add-time {
   position: relative;
-  top: -147px;
-  left: -45px;
+  top: -250px;
+  left: 45px;
   width: 22px;
 }
 
@@ -79,10 +80,38 @@
 }
 
 
+/*#local-media > video, #local-media:hover {
+  transition: scale(2) 2s;
+}*/
 
+.grow-local {
+  animation-fill-mode: forwards;
+  -webkit-animation-fill-mode: forwards
+  -webkit-animation: moveLocalVid .5s ease-in forwards;
+  animation: moveLocalVid .5s ease-in forwards;
+}
 
+@-webkit-keyframes moveLocalVid{
+  0% {
+    transform: scale(1);
 
+  }
 
+  100% {
+    transform: scale(4);
+    top: -270px;
+    right: 80px;
+  }
+}
 
-
-
+@keyframes moveLocalVid{
+  0% {
+    transform: scale(1);
+  }
+  
+  100% {
+    transform: scale(4);
+    top: -270px;
+    right: 80px;
+  }
+}
