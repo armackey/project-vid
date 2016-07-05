@@ -3,11 +3,11 @@
 
   angular
     .module('app')
-    .factory('timerFact', timerFact);
+    .factory('vidcountFact', vidcountFact);
 
-    timerFact.$inject = ['chatSocket', 'authFact', '$q', '$rootScope', '$interval', '$timeout'];
+    vidcountFact.$inject = ['chatSocket', 'authFact', '$q', '$rootScope', '$interval', '$timeout'];
 
-    function timerFact(chatSocket, authFact, $q, $rootScope, $interval, $timeout) {
+    function vidcountFact(chatSocket, authFact, $q, $rootScope, $interval, $timeout) {
 
       var remaining, mytimeout,
           counter = 0;

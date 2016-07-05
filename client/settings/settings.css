@@ -1,36 +1,19 @@
-#preference {
-  position: relative;
-  left: 30%;
-  color: black;
-  text-align: center;
-  background-color: #E7D19C;
-  border-color: black;
-  border-radius: 4px;
-  border-style: solid;
-  border-width: 3px;
-  display: inline-block;
-}
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+/*
+                                                  /preferences
+*/
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+
 
 .shared {
   display: inline;
 }
 
-.profile-container {
-  width: 650px;
-  height: 700px;
-  background-color: white;
-  border-radius: 2%;
-  position: relative;
-  top: 10px;
-  left: 60px;
-}
-
-p#preferences {
-  float: right;
-  position: relative;
-  left: -20px;
-  color: #45ccce;
-}
 
 .selections {
   display: inline;
@@ -40,4 +23,121 @@ p#preferences {
 form {
   position: relative;
   margin: 0px 10px 5px 10px;
+}
+
+#back-to-myprofile {
+  cursor: pointer;
+  float: right;
+  position: relative;
+  left: -20px;
+  color: #45ccce;
+  cursor: pointer;
+
+}
+
+#inner-preferences {
+  position: relative;
+  top: 130px;
+  margin-left: 9px;
+}
+
+form > p {
+  color: #45ccce;
+  font-size: 20px;
+}
+
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /*text-indent: 1px;*/
+  /*text-overflow: '';*/
+  width: 13%;
+  height: 20px;
+
+}
+
+#inner-preferences > button {
+  background-color: #45ccce;
+  position: relative;
+  top: 40px;
+}
+
+
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+/*
+                                                  /myprofile Code
+*/
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+
+.profile-container, #preference {
+  width: 650px;
+  height: 700px;
+  background-color: white;
+  border-radius: 2%;
+  position: relative;
+  top: 10px;
+  left: 60px;
+}
+
+.is-mutual, .not-mutual {
+  display: inline;
+}
+
+.is-mutual {
+  color: #45ccce;
+}
+
+.not-mutual {
+  color: #DFE8E9
+}
+
+.list-name {
+  color: #45ccce;
+  display: inline-block;
+  position: relative;
+  font-size: 20px;
+  top: -27px;
+  left: 9px;
+}
+
+.list-game {
+  display: inline;
+}
+
+.list-game > p {
+  margin: 0px;
+}
+
+.list-container {
+  background-color: #FDFDF1;
+  margin-bottom: 10px;
+}
+
+.list-inner {
+  position: relative; 
+  left: 12px;
+}
+
+.list-inner > div > img {
+  width: 50px;
+}
+
+#stats { 
+  position: relative;
+  top: 140px;
+  display: inline;
+}
+
+p#preferences {
+  float: right;
+  position: relative;
+  left: -20px;
+  color: #45ccce;
+  cursor: pointer;
 }

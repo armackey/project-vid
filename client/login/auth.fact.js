@@ -5,11 +5,12 @@
     .module('app')
     .factory('authFact', authFact);
 
-    authFact.$inject = ['$q', '$http', 'localStorageService', '$state'];
+    authFact.$inject = ['$q', '$http', 'localStorageService', '$state', '$window'];
 
-    function authFact($q, $http, localStorageService, $state) {
+    function authFact($q, $http, localStorageService, $state, $window) {
       
       var currentUser = null;
+
 
       return {
 

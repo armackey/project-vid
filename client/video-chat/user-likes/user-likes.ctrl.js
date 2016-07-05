@@ -17,7 +17,7 @@
       self.notifyLiked = '';
 
       // when chat starts we need the id and name of our matched user  
-      $rootScope.$on('chat-starts', function(data) { 
+      $rootScope.$on('chat-started', function(data) { 
         self.totalLikes = conToVidChat.getLikes(); // may have to go in the 'chat-starts' listener
         sendLike = {
          matchId: conToVidChat.getMatchId(), 

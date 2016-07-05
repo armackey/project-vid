@@ -1,5 +1,5 @@
 <div ng-include src="'./navbar/navbar.html'"></div>
-
+<div ng-controller="videoChatCtrl"></div>
 <div id="other-name">Conversation with {{msg.otherUser}}</div>
 
 <img id="other-photo" src="{{msg.otherPhoto}}" alt="">
@@ -7,16 +7,29 @@
 
 <ol class="messages-container" scroll-glue>
 
-  <li ng-repeat="message in msg.messages track by $index" ng-class=" message.from === msg.currentUser ? 'self' : 'other' ">
+  <li ng-repeat="message in msg.messagesArray track by $index" ng-class=" message.from === msg.currentUser ? 'self' : 'other' ">
     
     <div class="messages">
-      {{message.message}} 
+      
+      <div id="{{ message.id }}" ng-model="message.id">{{message.message}}</div>
+      <div ng-if="message.from !== msg.currentUser && message.pending_call === true && !message.expired && !message.denied">
+        <button ng-click="msg.acceptVideoCall(message.id)"> accept</button><button ng-click="msg.declineVideoCall(message.id)">decline</button>
+      </div>
+      <p class='ex-or-denied' ng-show="message.expired">EXPIRED</p>
+      <p class='ex-or-denied' ng-show="message.denied">DENIED</p>
+      <!-- <p class='ex-or-denied' ng-hide="message.expired || message.denied && message.pending_call" >{{ msg.timeLeft }}</p> -->
+      <p class="connecting" ng-show="!message.pending_call && !message.answer && !message.expired && !message.denied && message.videoRequest">CONNECTING</p>
+     <p ng-model="expires">{{expires}}</p> 
+<!--       <timer class='ex-or-denied' ng-model="msg.timeLeft" ng-show="!message.expired && !message.denied && message.pending_call && message.videoRequest" interval="1000" end-time="msg.timeLeft" countdown="msg.timeLeft">{{ countdown }}</timer> -->
+
       <time class="message-date" am-time-ago="message.date"></time>
     </div>
 
   </li>
 
 </ol>
+
+<button ng-click="msg.call()" ng-model="msg.timeLeft" ng-disabled="msg.timeLeft > 0">call</button> 
 
 <textarea rows="4" cols="50" ng-keyup="$event.keyCode == 13 && msg.isChecked && msg.sendMessage();" placeholder="say something nice" ng-model="msg.saySomething" type="text"> </textarea>
 <div id="on-enter">

@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
-  facebookID: String,
+  facebookId: String,
   token: String,
   socketid: String,
   name: String,
@@ -12,50 +12,41 @@ var UserSchema = new Schema({
   inCall: {type: Boolean, default: false},
   gender: String,
   age: {type: Number},
-  available: {type: Boolean, default: false},
   userTaken: {type: Boolean, default: false},
-  location: {type: [Number]},
   created_at: {type: Date, default: Date.now},
+  distance: {type: Number},
   block_list: [
     {
-      name: String
-    },
-    {
-      user_id: String
-    },
-    {
+      name: String,
+      user_id: String,
       created_at: {type: Date, default: Date.now}
     }
   ],
   people_met: [
     {
-      name: String
-    },
-    {
-      user_id: String
-    },
-    {
-      liked: {type: Boolean, default: false}
-    },
-    {
-      mutual: {type: Boolean, default: false}
-    },
-    {
+      name: String, user_id: String, liked: {type: Boolean, default: false}, created_at: {type: Date, default: Date.now}, mutual: {type: Boolean, default: false},
       games_played: {
         losses: {type: Number, default: 0},
         wins: {type: Number, default: 0}
       }
     },
+  ],
+
+
+
+  pending_calls: [
     {
+      name: String,
+      user_id: String,
       created_at: {type: Date, default: Date.now}
     }
   ],
 
+  upcoming_calls: [
+    {user_id: String, name: String}
+  ],
+
   total_likes: {type: Number, default: 0},
-
-  
-  message: {type: Schema.Types.ObjectId, ref: 'Message'},
-
   
   preferences: {
     iWantToMeet: String,
@@ -63,7 +54,14 @@ var UserSchema = new Schema({
       lt: Number,
       gt: Number
     }
-  }
+  },
+
+  location: { 
+    type: {type: String, default: 'Point'},
+    coordinates: [Number]
+    // This is a length 2 array with longitude, latitude
+  },
+  message: {type: Schema.Types.ObjectId, ref: 'Message'},
 });
 
 UserSchema.index({location: '2dsphere'});

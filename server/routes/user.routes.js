@@ -4,11 +4,11 @@ var express = require('express'),
 
 router.put('/searchForMatch', userCtrl.searchForMatch);
 router.put('/twilioToken', userCtrl.getToken);
-router.put('/receiveMatch', userCtrl.receiveMatch);
-router.put('/availToChat', userCtrl.toggleAvail);
+router.put('/getMatchInfo', userCtrl.getMatchInfo);
 router.put('/stats', userCtrl.stats);
 router.post('/login', userCtrl.login);
 
+router.put('/showPrevPreferences', userCtrl.showPrevPreferences);
 router.post('/preferences', userCtrl.preferences);
 
 

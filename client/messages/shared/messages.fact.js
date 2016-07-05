@@ -5,15 +5,19 @@
     .module('app')
     .factory('msgFact', msgFact);
 
-    msgFact.$inject = ['$http', 'chatSocket', 'authFact', '$q', '$rootScope', 'localStorageService'];
+    msgFact.$inject = ['$http', 'chatSocket', 'authFact', '$q', '$rootScope', 'localStorageService', 'moment'];
 
-    function msgFact($http, chatSocket, authFact, $q, $rootScope, localStorageService) {
+    function msgFact($http, chatSocket, authFact, $q, $rootScope, localStorageService, moment) {
 
-      var messagesArray = [],
+      var invite,
           myPhoto = '',
           otherPhoto = '',
+          userId,
+          otherId,
           newMessageCount = 0,
           token;
+
+
 
 
       return {
@@ -41,38 +45,27 @@
           // if browser is refreshed, app.js will make request for current thread.
           // if state === 'thread' app.js will also make request for current thread.
           // below, we prevent duplicate requests
-          if (this.requestForMessagesSent) { 
-            return;
-          }
+          // if (this.requestForMessagesSent) { 
+          //   return;
+          // }
+
+          // if (threadId === null) return;
 
           var self = this;
           var deferred = $q.defer();
-          messagesArray = [];
           this.requestForMessagesSent = true;
 
           $http.put('/getMessages', {threadId: threadId, userId: userId}).then(function(data) {
-            var content = data.data.content;
-            for (var i = 0; i < content.messages.length; i++) {
-              if (!content.messages[i].message) continue;
-              if (content.messages[i].unread && newMessageCount > 0) {
-                newMessageCount--;
-              }
-
-              messagesArray.push({
-                message: content.messages[i].message, 
-                from: content.messages[i].from, 
-                date: content.messages[i].created_at, 
-                // myPhoto: self.orderPhotos(content.users, userId), 
-                // otherPhotos: self.orderPhotos(content.users, userId)
-              });
-
-              $rootScope.$emit('new-message-count');
-            }
+            deferred.resolve(data);
+          }, function(data) {
+            deferred.reject(data);
           });
+
+          return deferred.promise;
         },
 
-        getMessages: function(id) {
-          return messagesArray;
+        getOtherId: function() {
+          return otherId;
         },
 
         setRequestForMessagesSent: function() {

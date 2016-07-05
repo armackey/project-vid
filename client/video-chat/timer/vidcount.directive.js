@@ -3,9 +3,9 @@
 
   angular
     .module('addTime', [])
-    .directive('timer', timer);
+    .directive('vidcount', vidcount);
 
-  function timer($timeout, $http, $interval, conToVidChat, authFact, $q) {
+  function vidcount($timeout, $http, $interval, conToVidChat, authFact, $q) {
     return {
       restrict: 'AE',
       require: '^sayCheese',
@@ -16,8 +16,6 @@
       '<img src="./video-chat/shared/images/time-white.svg" class="add-time" ng-click="addTime()">',
       link: function(scope, elem, atts, sayCheese) {
 
-  
-        
         var counterStarted = false;
         var isPause = false;
         var remaining;
@@ -36,9 +34,9 @@
           console.log('chats over');
         });
 
-        scope.$on('emit-timer', function() {
-          console.log('time should be added');
-          startTimer(60);
+        scope.$on('chat-started', function(ev, seconds) {
+          console.log(seconds);
+          startTimer(seconds);
         });
         // #45ccce
 
@@ -90,7 +88,7 @@
           
           counterStarted = true;
           scope.counter--;  
-          console.log(scope.counter);
+          // console.log(scope.counter);
           changeColor();
           mytimeout = $timeout(onTimeout,1000);
           if (scope.counter <= 0) {

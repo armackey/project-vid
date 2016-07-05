@@ -4,6 +4,24 @@
   <p id="preferences" ui-sref="preferences">Change Preferences</p>  
 
   <div id="stats">
-    
+    <h2>People you've met.</h2>
+     <div ng-repeat="person in settingsCtrl.peopleMet">
+       <div class="list-container">
+         <div class="list-inner">
+          <div style="display:inline-block; width:90%; min-width: 250px;">
+            <img class="list-photo" src={{person.photo}} alt="person.photo">
+            <div class="list-name">{{person.name}}</div> 
+            <div class="list-game">
+              <p>Games Played</p>
+              <p>Wins: {{person.games.wins}} Losses: {{person.games.losses}}</p>
+            </div>
+            <div ng-class=" person.mutual ? 'is-mutual' : 'not-mutual' ">mutual</div>
+            <time am-time-ago="person.date"></time>
+           </div>
+           <button class="list-call" ng-click="settingsCtrl.call(person.id)">call</button>
+         </div>
+       </div>
+     </div> 
   </div>
+
 </div>

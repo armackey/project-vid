@@ -5,12 +5,13 @@
     .module('app')
     .controller('navbarCtrl', navbarCtrl); 
 
-    navbarCtrl.$inject = ['authFact', '$http', '$q', '$state', 'fbFact', 'conToVidChat', '$location', 'msgFact', '$rootScope'];
+    navbarCtrl.$inject = ['authFact', '$http', '$q', '$state', 'fbFact', 'conToVidChat', '$location', 'msgFact', '$rootScope', 'geolocationFact'];
 
-    function navbarCtrl(authFact, $http, $q, $state, fbFact, conToVidChat, $location, msgFact, $rootScope) {
+    function navbarCtrl(authFact, $http, $q, $state, fbFact, conToVidChat, $location, msgFact, $rootScope, geolocationFact) {
       
       var self = this;
-      var myInfo;
+      var myInfo = {};
+      var position;
       
       self.loggedIn = authFact.getUser();
       self.locationActive = false;
@@ -48,40 +49,53 @@
           return;
         }
 
-        console.log('state changed');
         self.locationActive = true;
       };
 
       self.login = function() {
-        fbFact.facebookLogin().then(function(response) {
+        geolocationFact.getCurrentPosition().then(function(mypos) {
+          position = {longitude: mypos.coords.longitude, latitude: mypos.coords.latitude};
           
-          var accessToken = FB.getAuthResponse();
+          
+      
+        }).then(function() {
 
-          myInfo = response;
-          myInfo.token = accessToken.accessToken;
+          fbFact.facebookLogin().then(function(response) {
 
-          $http.post('/login', myInfo).then(function(data) {
-            $state.go(data.data.view);
-            myInfo.id = data.data.id;
-            myInfo.picture = data.data.picture;
-            
-            self.profile = data.data.picture;
-            console.log(self.profile);
-            setUserInfo(myInfo);
+            var accessToken = FB.getAuthResponse();
+
+            myInfo = response;
+            myInfo.token = accessToken.accessToken;
+            myInfo.position = position;
+            console.log(myInfo);
+
+            $http.post('/login', myInfo).then(function(data) {
+              var view = data.data.view;
+              myInfo.id = data.data.id;
+              myInfo.picture = data.data.picture;
+              
+              self.profile = data.data.picture;
+              setUserInfo(myInfo, view);
+              console.log(data);
+            });
           });
         });
       };
 
-      function setUserInfo(user) {
-        authFact.setUser(user.name);
+
+
+      function setUserInfo(user, view) {
         authFact.setTokenLocalStorage({token: user.token, username: user.name, userId: user.id, profilePic: user.picture});
-        console.log('setUserInfo');
+        authFact.setUser(user.name);
+        $state.go(view);
       }
 
       self.logOut = function() {
-        $state.go('home');
+        console.log('logout');
+        
         authFact.setUser(null);
         authFact.logOut();
+        $state.go('home');
       };
 
     }

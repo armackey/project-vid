@@ -5,12 +5,13 @@
     .module('takePic', [])
     .directive('sayCheese', sayCheese);
 
-  function sayCheese(chatSocket, conToVidChat, authFact, timerFact) {
+  function sayCheese(chatSocket, conToVidChat, authFact) {
     return {
       restrict: 'AE',
       transclude: true,
       template:
-      '<div ng-transclude><canvas id="myCanvas"></canvas></div>',
+      '<div ng-transclude></div> <div id="myCanvas"></div>'+ 
+      '<button ng-click="takePic()">button</button>',
       controller: function($scope) {
         this.takePic = function() {
           $scope.takePic();
@@ -34,22 +35,14 @@
         });
 
         scope.takePic = function() {
-
-          var canvas  = document.createElement('canvas'),
-              myCanvas = document.getElementById('myCanvas'),
-              context = canvas.getContext('2d'),
+          var myCanvasId = document.getElementById('myCanvas');
+          var canvas  = document.createElement('canvas');
+          var context = canvas.getContext('2d'),
               myVideo = document.getElementById('local-media').querySelector('video'),
               width = 320,
               height = 200;
 
-              myCanvas.appendChild(canvas);
-
-          // var canvas  = elem.children()[1],
-              // context = canvas.getContext('2d'),
-              // myVideo = document.getElementById('local-media').querySelector('video'),
-              // width   = 320,
-              // height  = 200;
-
+          myCanvasId.appendChild(canvas);
 
           myVideo.setAttribute('width', width);
           myVideo.setAttribute('height', height);
@@ -66,7 +59,7 @@
           
           console.log(data.length);
 
-          // chatSocket.emit('mutual-like', {room: conToVidChat.getRoom(), photo: data, name: authFact.getUser(), id: userId});
+          chatSocket.emit('mutual-like', {room: conToVidChat.getRoom(), photo: data, name: authFact.getUser(), id: userId});
         };
 
         // remote video gets larger

@@ -11,7 +11,12 @@
       'LocalStorageModule',
       'vesparny.fancyModal',
       'luegg.directives',
-      'angularMoment'
+      'angularMoment',
+      // 'humanize-duration',
+      // 'angularjs-humanize-duration',
+      'timer',
+
+      
     ])
     .config(['$httpProvider', '$stateProvider', '$urlRouterProvider', '$locationProvider', function($httpProvider, $stateProvider, $urlRouterProvider, $locationProvider) {
       
@@ -21,7 +26,7 @@
           templateUrl: 'home/home.html',
           controller: 'homeCtrl',
           controllerAs: 'home',
-          requiresLogin: false,
+          requiresLogin: false
       });
 
       $stateProvider
@@ -30,7 +35,12 @@
           templateUrl: '/video-chat/video-chat.html',
           controller: 'videoChatCtrl',
           controllerAs: 'video',
-
+          requiresLogin: true,
+          resolve: {
+            getTwilioToken: function(makeCall) {
+              return makeCall.getTwilioToken();
+            }
+          }
       });
 
       $stateProvider
@@ -39,7 +49,35 @@
           templateUrl: '/messages/messages.html',
           controller: 'messageCtrl',
           controllerAs: 'msg',
+          requiresLogin: true,
+          // resolve: {
+          //   getMessage: function(msgFact, authFact) {
+          //     console.log('threads');
+          //     var threadId = msgFact.getThreadItems().threadId;
+          //     var userId = authFact.getTokenLocalStorage().userId;
+          //     msgFact.requestMessages(threadId, userId);
+          //     msgFact.setRequestForMessagesSent();
+          //   }
+          // }
       });
+
+      // $stateProvider
+      //   .state('messages.id', {
+      //     url: '/messages/:id',
+      //     templateUrl: '/messages/messages.html',
+      //     controller: 'messageCtrl',
+      //     controllerAs: 'msg',
+      //     requiresLogin: true,
+      //     resolve: {
+      //       getMessage: function(msgFact, authFact) {
+      //         console.log('threads');
+      //         var threadId = msgFact.getThreadItems().threadId;
+      //         var userId = authFact.getTokenLocalStorage().userId;
+      //         msgFact.requestMessages(threadId, userId);
+      //         msgFact.setRequestForMessagesSent();
+      //       }
+      //     }
+      // });
 
       $stateProvider
         .state('thread', {
@@ -47,6 +85,16 @@
           templateUrl: '/messages/messages.id.html',
           controller: 'messageCtrl',
           controllerAs: 'msg',
+          requiresLogin: true,
+          // resolve: {
+          //   getMessage: function(msgFact, authFact) {
+          //     console.log('threads');
+          //     var threadId = msgFact.getThreadItems().threadId;
+          //     var userId = authFact.getTokenLocalStorage().userId;
+          //     msgFact.requestMessages(threadId, userId);
+          //     msgFact.setRequestForMessagesSent();
+          //   }
+          // }
       });
 
       $stateProvider
@@ -55,6 +103,7 @@
           templateUrl: '/settings/preferences.html',
           controller: 'settingsCtrl',
           controllerAs: 'settingsCtrl',
+          requiresLogin: true
       });
 
       $stateProvider
@@ -63,40 +112,47 @@
           templateUrl: '/settings/my-profile.html',
           controller: 'settingsCtrl',
           controllerAs: 'settingsCtrl',
+          requiresLogin: true
       });
 
       // $locationProvider.html5Mode(true).hashPrefix('!');   
-      $urlRouterProvider.otherwise('/');
+      $urlRouterProvider.otherwise(function($injector) {
+        var $state = $injector.get('$state');
+        $state.go('home');
+      });
       
     }])
-    .run(['$rootScope', 'authFact', 'localStorageService', '$state', '$location', 'msgFact', 'chatSocket', 'conToVidChat', function($rootScope, authFact, localStorageService, $state, $location, msgFact, chatSocket, conToVidChat) {
+    .run(['$rootScope', 'authFact', 'localStorageService', '$state', '$location', 'msgFact', 'chatSocket', 'conToVidChat', 'makeCall', function($rootScope, authFact, localStorageService, $state, $location, msgFact, chatSocket, conToVidChat, makeCall) {
       $rootScope.$on('$stateChangeStart', function(event, toState, toParams, prevRoute, fromParams) {
 
         var localStore = localStorageService.get('dating-token');
+        var haveTwilToken = makeCall.returnTwiloStatus();
+        var requiresLogin = false;
 
-        if (toState.name === 'home') {
-          return;
+
+        if (toState.requiresLogin) {
+          requiresLogin = true;
         }
 
-        if (!localStore) {
-          console.log('not logged in');
+        if (requiresLogin && !localStore) {
+          event.preventDefault();
           $state.go('home');
-          event.preventDefault(); 
-          return;       
-        } else {
+        }
+
+        if (localStore) {
           var currentUser = localStore.username;
           authFact.setUser(currentUser);
-        }     
-
-        if (localStore !== null && toState.requiresLogin === false && prevRoute.name !== "") {
-          console.log('hit');
-          $state.go(prevRoute.name);
+          chatSocket.emit('connected', authFact.getTokenLocalStorage().token);
         }
 
+        // if (localStore !== null && toState.requiresLogin === false && prevRoute.name !== "") {
+        //   console.log('hit');
+        //   console.log(toState.name);
+        //   // $state.go(prevRoute.name);
+        // }
 
         
-        // sets us to online
-        chatSocket.emit('connected', authFact.getTokenLocalStorage().token);
+        
 
         // we dont want to accept calls if we're not on the correct view
         // toggles availability on server too
@@ -107,11 +163,11 @@
         // }
         
         // on page refresh gets thread id from local storage and makes request to server for thread
-        if (toState.name === 'thread' && msgFact.getMessages().length === 0) {
-          var id = msgFact.getThreadItems().threadId;
-          msgFact.requestMessages(id);
-          msgFact.setRequestForMessagesSent();
-        }
+        // if (toState.name === 'thread' && msgFact.getMessages().length === 0) {
+        //   var id = msgFact.getThreadItems().threadId;
+        //   msgFact.requestMessages(id);
+        //   msgFact.setRequestForMessagesSent();
+        // }
   
 
             

@@ -11,7 +11,13 @@ var MessageSchema = new Schema({
       from: String,
       message: String,
       unread: {type: Boolean, default: true},
-      created_at: {type: Date, default: Date.now}
+      created_at: {type: Date, default: Date.now},
+      pending_call: {type: Boolean, default: false},
+      expired: {type: Boolean, default: false},
+      denied: {type: Boolean, default: false},
+      answered: {type: Boolean, default: false},
+      video_request: {type: Boolean, default: false},
+      user_id: String
     }]
   },
   created_at: {type: Date, default: Date.now},

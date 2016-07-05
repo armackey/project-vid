@@ -25,23 +25,26 @@
   color: red;
 }
 
-.round-progress, .video-container {
+#countdown, .video-container {
   display: inline-block;
 }
 
 .round-progress {
-  top: -350px;
-  left: 355px;
+  width: 40px !important;
+  height: 40px !important;
+}
+
+#countdown {
+  top: -173px;
+  left: 250px;
   position: relative;
-  width: 50px !important;
-  height: 200px;
   z-index: 5;
 }
 
 .add-time {
   position: relative;
-  top: -250px;
-  left: 45px;
+/*  top: -250px;
+  left: 45px;*/
   width: 22px;
 }
 

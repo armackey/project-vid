@@ -10,13 +10,9 @@
     function conToVidChat($http, chatSocket, authFact, $q, $rootScope, $fancyModal) {
 
       var room, selectedUser, socketid, matchName, matchId, totalLikes,
-          token = authFact.getTokenLocalStorage(),
+          storageInfo = authFact.getTokenLocalStorage(),
           deferred = $q.defer();
 
-
-      $rootScope.$on('users-connected', function() {
-        $rootScope.$broadcast('chat-starts'); 
-      }); 
 
       chatSocket.on('sent-request', function(data) { 
         $fancyModal.open({
@@ -34,7 +30,7 @@
         inCall: false,
 
         searchForMatch: function() {
-          $http.put('/searchForMatch', token).then(function(user) {
+          $http.put('/searchForMatch', storageInfo).then(function(user) {
             deferred.resolve(user.data);
           }, function(user) {
             deferred.reject(user);
@@ -42,17 +38,28 @@
           return deferred.promise;
         },
 
-        receiveMatch: function(id) { // user whos waiting to be matched.. didn't find a match at first
-          $http.put('/receiveMatch', id).then(function(user) {
+        getMatchInfo: function(id) { // user whos waiting to be matched.. didn't find a match at first
+          $http.put('/getMatchInfo', id).then(function(user) {
             console.log(user);
             matchName = user.data.name;
             room = user.data.room; 
           });
         },
 
+        justMet: function() {
+          var otherUser = {};
+          otherUser.myToken = storageInfo;
+          otherUser.otherId = matchId;
+          otherUser.name = matchName;
+          console.log(otherUser);
+          $http.post('/justMet', otherUser).then(function() {
+
+          });
+        },
+
         isAvailToChat: function(avail) {
           var self = this;
-          $http.put('/availToChat', {token: token.token, avail: avail}).then(function(data) {
+          $http.put('/availToChat', {token: storageInfo.token, avail: avail}).then(function(data) {
             self.isAvail = data.data.avail;
           });
         },

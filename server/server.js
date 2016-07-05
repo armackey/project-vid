@@ -38,6 +38,7 @@ require('./sockets/messages-sockets')(io);
 
 app.use(require('./routes/user.routes'));
 app.use(require('./routes/message.routes'));
+app.use(require('./routes/video.routes'));
 
 // app.use(function (req, res, next) {
 //   // Website you wish to allow to connect

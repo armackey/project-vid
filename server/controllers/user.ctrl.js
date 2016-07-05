@@ -2,8 +2,13 @@ var User = require('../models/user.model');
 var Message = require('../models/message.model');
 var AccessToken = require('twilio').AccessToken;
 var ConversationsGrant = AccessToken.ConversationsGrant;
+var Call = require('../Events/call.events');
+var EE = require('events').EventEmitter;
+var emitter = new EE();
 var Q = require('q');
 var roomStore = {};
+
+
 
 require('dotenv').load();
 
@@ -12,13 +17,13 @@ exports.itsMutual = function(room, photo, name, id) {
   var users;
   
 
-  for (var key in roomStore) {
+  Object.keys(roomStore).forEach(function(key) {
     if (key === room) {
       users = [roomStore[key][0].id, roomStore[key][1].id];
     }
-  }
+  });
 
-  handleMutualLikes(users, name, id);
+  handleMutualLikes(users, id);
   
   updateThread(users, name, photo, id).then(function(thread) {
     thread.content.messages.push({from: name});
@@ -29,23 +34,25 @@ exports.itsMutual = function(room, photo, name, id) {
 
 function updateThread(users, name, photo, id) {
 
-  var defferred = Q.defer();
+  var deferred = Q.defer();
 
   Message.findOne({'created_by': users}, function(err, thread) {
     if (err) throw err;
     if (thread !== null && thread.content.users.length >= 3) { // checks if thread is already created with both users
+      console.log(thread);
+      console.log('thread is already created!!!!');console.log('thread is already created!!!!');console.log('thread is already created!!!!');console.log('thread is already created!!!!');
       return;
     }
 
     if (thread === null) { // if null create thread
       createThread(users, name, photo, id);
-      defferred.reject(thread);
+      deferred.reject(thread);
     } else {
-      defferred.resolve(thread);
+      deferred.resolve(thread);
     }
 
   });
-  return defferred.promise;
+  return deferred.promise;
 }
 
 function createThread(users, name, photo, id) {
@@ -66,45 +73,42 @@ function createThread(users, name, photo, id) {
   msg.created_by = users;
   msg.save();
 }
-// [575a75aaea44e4d867bbc9f2,575a75a3ea44e4d867bbc9f1]
-function handleMutualLikes(users, name, userId) {
+
+function handleMutualLikes(users, userId) {
   
   User.find({'_id': {$in: users}}, function(err, userArray) {
     
     var user = userArray.filter(function(elem, i, array) {
-      return elem.id !== userId ? elem : false; // return the user in the list that isn't currentUser
+      // basically finding currentUser in list of people they've met
+      return elem._id.toString() !== userId.toString() ? elem : false; // returns the user you just met.
     }).map(function(elem, i) {
       console.log(elem);
-      return elem.people_met; // return list of people they've met
-    }).filter(function(elem, i) {
-      // console.log(elem);
-      if (elem.user_id === userId) {
-        elem.push({name:name, mutual: true, liked: true});
+      if (elem.people_met[i].user_id === userId) { 
+        elem.people_met[i].mutual = true;
+        elem.people_met[i].liked = true;
       }
-      //return elem.user_id === userId ? elem : false; // find and return currentUser from the list of people theyve met.
+      elem.save();
     });
-
-    console.log(user);
   });
 }
 
-handleMutualLikes(['575a75aaea44e4d867bbc9f2','575a75a3ea44e4d867bbc9f1'], 'name', '575a75a3ea44e4d867bbc9f1');
-
 exports.setOffline = function(socketid) {
-  User.find({'socketid': socketid}, function(err, user) {
+
+  User.findOne({'socketid': socketid}, function(err, user) {
+    
     if (err) throw err;
     if (!user) return;
-    if (user.length < 1) return;
 
-    user[0].socketid = '';
-    user[0].inCall = false;
-    user[0].available = false;
-    user[0].isOnline = false;
-    user[0].save(function(err) {
+    user.socketid = '';
+    user.inCall = false;
+    user.available = false;
+    user.isOnline = false;
+    user.save(function(err) {
       if (err) throw err;
     });
   });
 };
+
 
 exports.tallyLikes = function(userid) {
   User.findOne({'_id': userid}, function(err, user) {
@@ -132,34 +136,41 @@ exports.isOnline = function(token, socketid) {
 };
 
 
-exports.receiveMatch = function(req, res) {
+exports.getMatchInfo = function(req, res) {
   // iterates over roomStore to find whom they're matched with using the matched id
   var id = req.body.from;
-
-  for (var room in roomStore) {
-    if (Array.isArray(roomStore[room])) {
-      for (var user = 0; user < roomStore[room].length; user++) {
-        if (roomStore[room][user].id === id) {
-          console.log(roomStore[room]);
-          res.send({
-            room: room,
-            name: roomStore[room][user].name
-          });
-        }
+  console.log('from', id);
+  Object.keys(roomStore).forEach(function(room){
+    for (var user = 0; user < roomStore[room].length; user++) {
+      if (roomStore[room][user].id === id) {
+        res.send({
+          room: room,
+          name: roomStore[room][user].name
+        });
       }
     }
-  }
+  });
 };
 
+/*
+***************************************************************************************
+***************************************************************************************
+***************************************************************************************
+getToken should happen once during runtime. 
+***************************************************************************************
+***************************************************************************************
+***************************************************************************************
+*/
 
 exports.getToken = function(req, res) {
   var myToken = req.body.token;
+
   if (auth(myToken, res) === false) {
     return;
   }
   User.findOne({'token': myToken}, function(err, user) {
 
-    var identity = user.id;
+    var identity = user._id;
     // Create an access token which we will sign and return to the client,
     // containing the grant we just created
     var token = new AccessToken(
@@ -192,48 +203,55 @@ exports.getToken = function(req, res) {
 
 
 exports.login = function(req, res) {
-  User.findOne({'facebookID' : req.body.id}, function(err, user) {
-    
-    if (err) throw err;
+  var facebookId = req.body.id;
+  User.findOne({'facebookId': facebookId}, function(err, user) {
 
     if (user) {
+      console.log('user exist');
       if (user.token !== req.body.token) {
-        console.log('new token');
+        
+        console.log('new token');console.log('new token');console.log('new token');console.log('new token');
       } 
+
       user.token = req.body.token;
       user.name  = req.body.name;
       user.picture = req.body.picture.data.url;
+      user.location.coordinates[0] = req.body.position.longitude;
+      user.location.coordinates[1] = req.body.position.latitude;
       user.save(function(err) {
         if (err) throw err;
       });
 
       if (!user.preferences.age.lt || !user.preferences.age.gt || !user.preferences.iWantToMeet) {
         res.send({
-          view: 'settings', 
-          message: 'missing preferences'
+          view: 'preferences', 
+          message: 'missing preferences',
+          id: user._id,
         }); 
-        return;       
+           
+      } else {
+
+        res.send({
+          id: user._id,
+          view: 'video-chat',
+          message: 'welcome back',
+          picture: user.picture,
+          token: user.token
+        });
+
       }
-      // may need to add return and save here as well ***IF*** decided to send info for new users
-
-      res.send({
-        id: user._id,
-        view: 'video-chat',
-        message: 'welcome back',
-        picture: user.picture
-      });
-
-      return;
 
     } else {
 
       var newUser = new User();
 
-      newUser.facebookID = req.body.id; 
+      newUser.facebookId = req.body.id; 
       newUser.gender = req.body.gender;
       newUser.token = req.body.token; 
       newUser.name  = req.body.name;
       newUser.email = req.body.email;
+      newUser.location.coordinates[0] = req.body.position.longitude;
+      newUser.location.coordinates[1] = req.body.position.latitude;
       newUser.picture = req.body.picture.data.url;
 
       newUser.save(function(err) {
@@ -241,7 +259,7 @@ exports.login = function(req, res) {
 
         res.send({
           id: newUser._id,
-          view: 'settings', 
+          view: 'preferences', 
           message: 'missing preferences',
           picture: newUser.picture
         }); 
@@ -252,94 +270,123 @@ exports.login = function(req, res) {
 };
 
 
-// TODO: ADD LOCATION TO QUERY............!!!!!!!!!!!!!!
 exports.searchForMatch = function(req, res) {
   var token = req.body.token;
-  if (auth(token, res) === false) {
-    return;
-  }
-  User.findOne({'token': token}, function(err, user) {
-    // if (user.inCall) {
-    //   console.log('call being answered');
-    //   User.findOne({'room': user.room})
-    //     .where({'token': {$ne: token}})
-    //     .exec(function(err, retrieved) {
-          
-    //       res.send({
-    //         typeUser: 'i am aswering',
-    //         name: user.name,
-    //         // remoteSocketid: user.socketid,
-    //         room: user.room,
-    //         id: user._id
-    //       });
-    //     });
-    //   return;
-    // }
-    if (!user) {
-      console.log(token);
-      console.log(user);console.log('cant find user');console.log('cant find user');console.log('cant find user');console.log('cant find user');
+  var id = req.body.id;
+  findMatches(id, req, res);
+};
+
+function findMatches(id, req, res) {
+  
+  User.findOne({'_id': id}, function(err, user) {
+
+    if (!user && res) {
+      res.send({veiw: 'home'});
       return;
     }
 
-    User.find({'isOnline': true})
-      .where({'token': {$ne: token}})
-      .where('inCall').equals(false)
-      // .where('available').equals(true)
-      .where('gender').equals(user.preferences.iWantToMeet)
-      .where('age').gte(user.preferences.age.gt).lte(user.preferences.age.lt)
-      .exec(doWeMatch);
+    if (res) {
+      if (!user.preferences.iWantToMeet || !user.preferences.age.lt || !user.preferences.age.gt || !user.age) {
+        res.send({view:'preferences'});
+        return;
+      }
+    }
 
-      function doWeMatch(err, retrieved) {
+    var distance = req ? req.body.distance : user.distance;
+
+    User.find({'isOnline': true}) 
+      .where({'_id': {$ne: id}})
+      .where('inCall').equals(false)
+      .where('location').near({ center: {type: 'Point', coordinates: [user.location.coordinates[0], user.location.coordinates[1]]}, 
+        maxDistance: distance * 1609.34, spherical: true
+      })
+      .where('gender').equals(user.preferences.iWantToMeet)
+      .where({'age': {$ne: null, $gte: user.preferences.age.gt, $lte: user.preferences.age.lt}})
+      .limit(5)
+      .exec(handleMatchedUsers).then(function() {
+        console.log('exec');
+      });
+
+      function handleMatchedUsers(err, retrieved) {
+        
         if (err) throw err;
-        if (retrieved.length < 1) {
-          res.send({message: 'sorry no users at this time', socketid: user.socketid}); return; // if we can't find any matches, it needs to search again.... expand search criteria
+        var call = new Call(user._id, emitter);
+        var amountOnList = call.getCallList(user._id).length;
+
+        if (amountOnList > 4) {
+          return;
         }
         
-        var matches = retrieved.filter(function(records) {
-          return user.age <= records.preferences.age.lt &&
-                 user.age >= records.preferences.age.gt &&
-                 user.gender === records.preferences.iWantToMeet;
-        });
-        // randomly select one user to send back to client
-        // write function to hash both emails
-        // pass result to socket io to create private room
-        
-        var randomNum = Math.floor((Math.random() * 10) + 1);        
-
-        // TODO:***************************************************************************
-        // change matches matches[0] to matches[randomNum] when there's more users
-        // actually hash the email addresses you lazy bum!!!
-        var matchedUser = matches[0];
-
-        var callerEmail = user.email; // callerEmail prevents users email from being modified
-        var room = createPrivateRoom(user, matchedUser);
-        setUsersInRoom(room, [{id: user.id, name: user.name}, {id: matchedUser.id, name: matchedUser.name}]);
-
-        user.inCall = true;
-        matchedUser.inCall = true;
-
-        matchedUser.save(function(err) {
-          if (err) throw err;
+        retrieved.filter(function(otherUsers) {
+          
+          return user.age <= otherUsers.preferences.age.lt &&
+                 user.age >= otherUsers.preferences.age.gt &&
+                 user.gender === otherUsers.preferences.iWantToMeet;
+        })
+        .forEach(function(matchedUser) {
+          call.addUserToList(user._id, matchedUser.name, matchedUser._id, matchedUser.email);
         });
 
-        user.save(function(err) {
-          if (err) throw err;
-        });
+        var callList = call.getCallList(user._id); // returns a list of users that matches my preferences and within maxDistance
+        console.log(callList);
+        var matchedUser = callList[0];
+        var room = createPrivateRoom(user.email, matchedUser.email);
 
+        checkIfStillAvail(call, user._id);
+        setUsersInRoom(room, [{id: user._id, name: user.name}, {id: matchedUser.user_id, name: matchedUser.name}]);
 
-        var sayHi = {
-          typeUser: 'i am calling',
+        toggleInCall([matchedUser.user_id, user._id]);
+
+        if (!res) return;
+
+        res.send({
           socketid: user.socketid,
           room: room,
-          name: matchedUser.name,
-          id: matchedUser._id
-        };
-
-        res.send(sayHi);  // sends the calling user information
-
+          receiverName: matchedUser.name,
+          receiverId: matchedUser.user_id,
+          // receiverSocketId: matchedUser.socketid
+        });
+        
       }
+
   });
-};  
+}
+
+function checkIfStillAvail(call, id) {
+  
+  var list = call.getCallList(id);
+
+  for (var i = 0, j = list.length; i < j; i++) {
+    handleDBSearch(list[i]);
+  }
+
+  function handleDBSearch(user) {
+    User.findOne({'_id': user.user_id}, function(err, matchedUser) {
+      if (!matchedUser.inCall || !matchedUser.isOnline) {
+        call.removeUserFromList(id, matchedUser._id);
+      }
+    });
+  }
+}
+
+function toggleInCall(users) {
+  User.find({'_id': {$in: users}}, function(err, users) {
+    if (err) throw err;
+    users.forEach(function(elem) {
+      if (elem.inCall) {
+        elem.inCall = false;
+      } else {
+        elem.inCall = true;
+      }
+      elem.save();
+    });
+  });
+}
+
+emitter.on('removed-from-list', function(id) {
+  console.log('ON : removed-from-list');
+  // findMatches(id);
+});
 
 function setUsersInRoom(room, users) {
   roomStore[room] = users;
@@ -347,88 +394,97 @@ function setUsersInRoom(room, users) {
 
 
 function createPrivateRoom(caller, answer) {
-  return caller.email+answer.email;
+  return caller+answer;
 }
 
-exports.toggleAvail = function(req, res) {
-  var token = req.body.token,
-      avail = req.body.avail;
-
-  if (auth(token, res) === false) {
-    return;
-  }
-
-  User.findOne({token: token}, function(err, user) {
-
-    user.available = avail;
-    user.save(function(err, user) {
-      if (err) throw err;
-      res.send({avail: avail});
-    });
-  });
-
-
-};
-
-
-
 exports.preferences = function(req, res) {
-  var token = req.body.token;
-  if (auth(token, res) === false) {
-    return;
-  }
-  if (!req.body.preferences.iWantToMeet || !req.body.preferences.ltAge || !req.body.preferences.gtAge || !req.body.gender || !req.body.myAge) {
-    console.log('something missing');
-    return;
-  }
-  var pref = req.body.preferences,
-      gender = req.body.gender,
-      age = req.body.myAge;
+
+  var id = req.body.id;
+  var preferences = req.body.preferences;
 
   
+  // if (!req.body.preferences.iWantToMeet || !req.body.preferences.ltAge || !req.body.preferences.gtAge || !req.body.gender || !req.body.myAge) {
+  //   res.send({view: 'preferences'});
+  //   return;
+  // }
 
-  User.findOne({'token': token}, function(err, user) {
+  var pref = preferences,
+      myGender = preferences.gender,
+      distance = preferences.distance,
+      age = preferences.myAge;
+  
+  User.findOne({'_id': id}, function(err, user) {
+    if (!user) {
+      res.send({view: 'home'}); 
+      return;
+    }
     user.preferences = {
-      iWantToMeet: pref.iWantToMeet,
+      iWantToMeet: pref.preferences.iWantToMeet, // gender user wants to meet
       age: {
-        lt: pref.ltAge.age,
-        gt: pref.gtAge.age
+        lt: pref.preferences.ltAge,
+        gt: pref.preferences.gtAge
       }
     };
-    
-    user.gender = gender;
-    user.age = age.age;
+    user.distance = distance;
+    user.gender = myGender;
+    user.age = age;
 
     user.save(function(err) {
       if (err) 
         throw err;
+      res.send({message: 'Successfully stored preferences'});
     });
-    res.send({message: 'thank you!'});
+
+    console.log(user);
+    
   });
 };
 
-function auth(token, res) {
-  User.findOne({'token': token}, function(err, user) {
-    if (user) {
-      return true;
-    } else {
-      res.send({'view': 'home'});
-      return false;
-    }
-  });
-}
 
 exports.stats = function(req, res) {
-  var token = req.body.token;
-  console.log(token);
-  User.findOne({'token': token}, function(err, user) {
+  var id = req.body.userId;
+  User.findById({'_id': id}, function(err, user) {
+    if (err) throw err;
+    if (!user) {
+      res.send({view: 'home'});
+      return;
+    }
+    if (user.people_met.length < 1) {
+      res.send({message: 'Meet some folks'});
+      return;
+    }
     var stats = {};
-    stats.people_met = user.people_met;
+    stats.people_met = JSON.parse(JSON.stringify(user.people_met)); // stringify and parse because our model doesn't like being modified
     stats.total_likes = user.total_likes;
-
-    res.send(stats);
+    // find the users you've met and grab facebook photos
+    // attach photos to people_met array on stats object
+    var iMetThem = stats.people_met.map(function(elem, i) {
+      var query = User.findOne({'_id': elem.user_id});
+      return query.exec().then(function(user) {
+        elem.picture = user.picture;
+      }); 
+    });
+    Q.all(iMetThem).then(function(users){
+      res.send(stats);  
+    });
+    
   });
 };
+
+exports.showPrevPreferences = function(req, res) {
+  var id =  req.body.id;
+
+  User.findById({'_id': id}, function(err, user) {
+    if (err) throw err;
+    if (!user) {
+      res.send({view: 'home'}); 
+      return;
+    }
+    res.send({preferences: user.preferences, age: user.age, distance: user.distance, gender: user.gender});
+  });
+};
+
+
 
 
 
