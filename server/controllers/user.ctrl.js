@@ -165,9 +165,6 @@ getToken should happen once during runtime.
 exports.getToken = function(req, res) {
   var myToken = req.body.token;
 
-  if (auth(myToken, res) === false) {
-    return;
-  }
   User.findOne({'token': myToken}, function(err, user) {
 
     var identity = user._id;
@@ -432,11 +429,12 @@ exports.preferences = function(req, res) {
     user.save(function(err) {
       if (err) 
         throw err;
-      res.send({message: 'Successfully stored preferences'});
+      if (user.people_met.length < 1) {
+        res.send({view: 'video-chat', message: 'Successfully stored preferences'});
+      } else {
+        res.send({message: 'Successfully stored preferences'});  
+      }      
     });
-
-    console.log(user);
-    
   });
 };
 

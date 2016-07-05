@@ -10,14 +10,13 @@
     function settingsCtrl(authFact, $http, $q, $state, makeCall, chatSocket, $fancyModal) {
       
       var self = this;
+      var peep;
       var storageInfo = authFact.getTokenLocalStorage();
       var conversationsClient = makeCall.getConversationClient();
 
       self.myName = authFact.getUser();
       self.ageRange = [];
       self.peopleMet = [];  
-
-      console.log(authFact.getTokenLocalStorage());
 
       chatSocket.on('call-result', function(data) {
 
@@ -91,15 +90,22 @@
       self.peopleMet.push({id: '5762e7094a41ab214ca18d12', date: "2016-06-16T17:57:38.064Z", mutual: true, name: 'Wonder Woman', photo: "https://scontent.xx.fbcdn.net/v/t1.0-1/c15.0.50.50/p50x50/1379841_10150004552801901_469209496895221757_n.jpg?oh=41eda0af5152a6d5673b221f24b4c2a4&oe=57C7B633"});
       $http.put('/stats', storageInfo).then(function(data) {
         if (!data) return;
-        if (data.data.view) {
-          $state.go(data.data.view);
+
+        var view = data.data.view;
+        var message = data.data.message;
+
+        if (view) {
+          $state.go(view);
           return;
         }
-        if (data.data.message) {
+        if (message) {
           // message = data.data.message
           return;
         }
-        data.data.people_met.map(function(elem, i) {
+
+        peeps = data.data.people_met;
+
+        peeps.map(function(elem, i) {
           self.peopleMet.push({id: elem.user_id, date: elem.created_at, mutual: elem.mutual, name: elem.name, photo: elem.picture, games: elem.games_played});
         });
       });
@@ -127,13 +133,29 @@
 
         $http.post('/preferences', {preferences: self.me, id: storageInfo.userId}).then(function(data) {
           if (!data) return;
-          if (data.data.view) {
-            $state.go(data.data.view);
-            return;
-          }
+          var message = data.data.message;
+          var view = data.data.view;
           console.log(data);
+          if (message) {
+            $fancyModal.open({
+              template: '<p> ' + message + ' :) </p> <br/> ',
+              // templateUrl: './settings/templates/preference.success.fm.html',
+              showCloseButton: true,
+              closeOnOverlayClick: false
+            });
+          }
+
+          if (view) {
+            $state.go(view);
+          }
+
         });
       };
+
+
+      function test() {
+        console.log('test');
+      }
 
     }
 

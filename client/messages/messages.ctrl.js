@@ -216,7 +216,8 @@
           unread: newThread.unread, 
           date: newThread.created_at, 
           otherPhotos: newThread.otherPhoto, 
-          myPhotos: newThread.myPhoto});
+          myPhotos: newThread.myPhoto
+        });
       }
 
       self.call = function() {

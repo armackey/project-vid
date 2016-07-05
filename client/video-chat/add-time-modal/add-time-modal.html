@@ -1,11 +1,11 @@
-<div ng-controller="confirmTimeCtrl as ctCtrl">
+<div ng-controller="confirmTimeCtrl as vm">
   
-  <div ng-show="!ctCtrl.madeRequest">
-    {{ctCtrl.matchedName}} would like to add time. <br>
-    <button ng-click="ctCtrl.posResponse();">Of Course!</button> <button ng-click="ctCtrl.negResponse();">no thanks!</button>
+  <div ng-show="!vm.madeRequest">
+    {{vm.matchedName}} would like to add time. <br>
+    <button ng-click="vm.posResponse();">Of Course!</button> <button ng-click="vm.negResponse();">no thanks!</button>
   </div>
 
-  <div ng-show="ctCtrl.madeRequest">
+  <div ng-show="vm.madeRequest">
     Waiting for response.
   </div>
   
