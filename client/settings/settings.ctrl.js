@@ -10,7 +10,7 @@
     function settingsCtrl(authFact, $http, $q, $state, makeCall, chatSocket, $fancyModal) {
       
       var self = this;
-      var peep;
+      var peeps;
       var storageInfo = authFact.getTokenLocalStorage();
       var conversationsClient = makeCall.getConversationClient();
 
@@ -31,15 +31,13 @@
       
 
       self.me = {
-        preferences: {
-          iWantToMeet: self.iWantToMeet,
-          ltAge: self.ltAge,
-          gtAge: self.gtAge
-        },
-          gender: self.gender,
-          myAge: self.myAge,
-          token: authFact.getTokenLocalStorage().token,
-          distance: self.distance
+        iWantToMeet: self.iWantToMeet,
+        ltAge: self.ltAge,
+        gtAge: self.gtAge,
+        gender: self.gender,
+        birthday: self.birthday,
+        token: authFact.getTokenLocalStorage().token,
+        distance: self.distance
       };
 
       self.distanceAway = [
@@ -61,9 +59,8 @@
 
       for (var i = 18; i <= 30; i+=1) {
         self.ageRange.push(i);
-        self.me.preferences.gtAge = self.ageRange[0];
-        self.me.preferences.ltAge = self.ageRange[0];
-        self.me.myAge = self.ageRange[0];
+        self.me.gtAge = self.ageRange[0];
+        self.me.ltAge = self.ageRange[0];
       }
 
 
@@ -74,14 +71,15 @@
           return;
         }
         var pref = data.data;
+        console.log(pref);
       
-        self.me.preferences.gtAge = pref.preferences.age.gt;
-        self.me.preferences.ltAge = pref.preferences.age.lt;
-        self.me.myAge = pref.age;
+        self.me.gtAge = pref.preferences.age.gt;
+        self.me.ltAge = pref.preferences.age.lt;
 
-        self.me.preferences.iWantToMeet = pref.preferences.iWantToMeet;
+        self.me.iWantToMeet = pref.preferences.iWantToMeet;
         self.me.gender = pref.gender;
         self.me.distance = pref.distance;
+        self.me.birthday = pref.birthday;
       });
 
 
@@ -99,10 +97,12 @@
           return;
         }
         if (message) {
+          console.log(message);
           // message = data.data.message
           return;
         }
-
+        
+        if (!data.data.people_met) return;
         peeps = data.data.people_met;
 
         peeps.map(function(elem, i) {
@@ -113,7 +113,7 @@
 
       self.sendPref = function() {
 
-        if (!self.me.preferences.iWantToMeet || !self.me.gender) {
+        if (!self.me.iWantToMeet || !self.me.gender) {
           $fancyModal.open({
             template: '<p>Missing fields</p>',
             showCloseButton: true,
@@ -122,7 +122,7 @@
           return;
         }
 
-        if (self.me.preferences.gtAge.age > self.me.preferences.ltAge.age) {
+        if (self.me.gtAge.age > self.me.ltAge.age) {
           $fancyModal.open({
             template: '<p>Switch ages..</p>',
             showCloseButton: true,
@@ -130,7 +130,7 @@
           });
           return;
         }
-
+        console.log(self.me);
         $http.post('/preferences', {preferences: self.me, id: storageInfo.userId}).then(function(data) {
           if (!data) return;
           var message = data.data.message;
@@ -152,10 +152,6 @@
         });
       };
 
-
-      function test() {
-        console.log('test');
-      }
 
     }
 

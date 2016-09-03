@@ -3,14 +3,15 @@
 
   angular
     .module('app')
-    .factory('vidcountFact', vidcountFact);
+    .factory('counterFact', counterFact);
 
-    vidcountFact.$inject = ['chatSocket', 'authFact', '$q', '$rootScope', '$interval', '$timeout'];
+    counterFact.$inject = ['chatSocket', 'authFact', '$q', '$rootScope', '$interval', '$timeout'];
 
-    function vidcountFact(chatSocket, authFact, $q, $rootScope, $interval, $timeout) {
+    function counterFact(chatSocket, authFact, $q, $rootScope, $interval, $timeout) {
 
-      var remaining, mytimeout,
-          counter = 0;
+      var remaining, mytimeout; 
+      var counter = 0;
+
 
       return {
 
@@ -19,11 +20,12 @@
         startTimer: function(time) {
           
           var self = this;
+          var deferred = $q.defer();
 
-          if (this.counterStarted) {
-            counter += time;  
-            return;
-          }
+          // if (this.counterStarted) {
+          //   counter += time;  
+          //   return;
+          // }
           
           counter = time;
 
@@ -31,24 +33,27 @@
             
             self.counterStarted = true;
             counter--;  
-            console.log(counter);
+            
             // changeColor();
             mytimeout = $timeout(onTimeout,1000);
             if (counter <= 0) {
+              self.counterStarted = false;
               self.cancelTick();
+              deferred.resolve();
             }
           }
 
           mytimeout = $timeout(onTimeout,1000);
 
-
-        },
+          return deferred.promise;
+        }, 
 
         onTimeout: function(counter, counterStarted) {
 
         },
 
         cancelTick: function() {
+          console.log('tick cancelled');
           $timeout.cancel(mytimeout);
         },
 

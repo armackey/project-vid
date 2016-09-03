@@ -66,6 +66,7 @@
 
       msgFact.requestMessages(threadId, userId).then(function(data) {
         var content = data.data.content;
+
         if (content === undefined) {
           return;
         }

@@ -71,7 +71,7 @@
 
             $http.post('/login', myInfo).then(function(data) {
               var view = data.data.view;
-              myInfo.id = data.data.id;
+              myInfo.fbId = data.data.id;
               myInfo.picture = data.data.picture;
               
               self.profile = data.data.picture;

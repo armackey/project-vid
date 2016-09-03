@@ -26,10 +26,10 @@ function handleExpiredPendingCalls(arg, thread)  {
 }
 
 exports.getThreads = function(req, res) {
+  console.log(req.body);
+  var id = req.body.id;
 
-  var token = req.body.token;
-
-  User.findOne({'token': token}, function(err, user) {
+  User.findOne({'_id': id}, function(err, user) {
     if (err) throw err;
 
     if (!user) {
@@ -39,7 +39,8 @@ exports.getThreads = function(req, res) {
       return;
     }
 
-    Message.find({'created_by': user.id})
+    Message
+      .find({'created_by': user.id})
       .sort('-last_message_date')
       .exec(function(err, msgs) {
 
@@ -48,7 +49,8 @@ exports.getThreads = function(req, res) {
         var messages = [];
 
         for (var i = 0; i < msgs.length; i++) {
-          messages.push({id: msgs[i].id, content: msgs[i].content});
+          var lastMessageSent = msgs[i].content.messages[msgs[i].content.messages.length - 1];
+          messages.push({threadId: msgs[i].id, lastMessageSent: lastMessageSent, users: msgs[i].content.users});
         }
 
         res.send(messages);
@@ -107,13 +109,14 @@ exports.togglePendingAndDenied = function(bool, threadId, messageId) {
   });
 };
 
+
 exports.getMessages = function(req, res) {
   
   var threadId = req.body.threadId,
       userId = req.body.userId;
+      console.log(req.body);
 
   Message.findOne({'_id': threadId}, function(err, msgs) {
-
     // check if message was sent by them
     // if it wasn't then mark as read(unread=false)******************************************
 

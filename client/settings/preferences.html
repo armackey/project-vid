@@ -14,21 +14,26 @@
         <input type="radio" ng-model="settingsCtrl.me.gender" name="identity" value="{{identify.sex}}"  />
       </li> <br>
 
-      <p>My age is..</p>
-      <select class="selections" name="myAge" value="18" ng-model="settingsCtrl.me.myAge" ng-options="age for age in settingsCtrl.ageRange"  >
-      </select> <br>
+      <p>My birthday is..</p>
+      <input type="text" placeholder="01/06/1991" ng-model="settingsCtrl.me.birthday">
+      <br>
+
+      <p>Orientation</p>
+      <p>add drop down</p>
 
       <p>Seeking..</p>
       <li class="selections" ng-repeat="meeting in settingsCtrl.hereToMeet">
         {{meeting.sex}}
-        <input type="radio" ng-model="settingsCtrl.me.preferences.iWantToMeet" name="meeting" value="{{meeting.sex}}"  />
+        <input type="radio" ng-model="settingsCtrl.me.iWantToMeet" name="meeting" value="{{meeting.sex}}"  />
       </li> <br>
 
       <p> Between ages.. </p>
-      <select class="selections" name="gtAge" ng-model="settingsCtrl.me.preferences.gtAge" ng-options="age for age in settingsCtrl.ageRange" > 
+      <select class="selections" name="gtAge" ng-model="settingsCtrl.me.gtAge" ng-options="age for age in settingsCtrl.ageRange" > 
       </select>
 
-      <select class="selections" name="ltAge" ng-model="settingsCtrl.me.preferences.ltAge" ng-options="age for age in settingsCtrl.ageRange"> 
+
+
+      <select class="selections" name="ltAge" ng-model="settingsCtrl.me.ltAge" ng-options="age for age in settingsCtrl.ageRange"> 
       </select> <br>
 
       <p>Within..</p>

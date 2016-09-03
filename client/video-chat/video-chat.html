@@ -1,10 +1,11 @@
 <div ng-include src="'./navbar/navbar.html'"></div>
 
 
-
+<div ng-hide="video.inCall">{{video.message}}</div>
 <div class="video-container" ng-show="video.inCall">
   
   <div ng-show="video.match.name">Say hi to {{video.match.name}}!</div>    
+
   <div ng-controller="userLikes as uL">
     
     <div class="likes">

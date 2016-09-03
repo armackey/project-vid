@@ -64,6 +64,10 @@
           });
         },
 
+        inMatching: function(inMatch) {
+          $http.put('/inMatching', {id: storageInfo.userId, inMatch: inMatch}).then(function(data) {});
+        },
+
         getAvail: function() {
           return this.isAvail;
         },
@@ -106,8 +110,12 @@
           return matchName;
         },
 
-        enterRoom: function() {
-          chatSocket.emit('enter-room', room);
+        enterRoom: function(inCall) {
+          chatSocket.emit('enter-room', {room: room, id: storageInfo.userId, inCall: inCall});
+        },
+
+        exitCall: function(inCall) {
+          chatSocket.emit('exit-call', {id: storageInfo.userId, inCall: inCall});
         },
 
         setLikes: function(likes) {

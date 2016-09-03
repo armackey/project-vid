@@ -5,7 +5,7 @@
     .module('addTime', [])
     .directive('vidcount', vidcount);
 
-  function vidcount($timeout, $http, $interval, conToVidChat, authFact, $q) {
+  function vidcount($timeout, $http, $interval, conToVidChat, authFact, $q, $rootScope) {
     return {
       restrict: 'AE',
       require: '^sayCheese',
@@ -24,19 +24,18 @@
         scope.counter = 0;
 
 
-        scope.$on('chat-starts', function() {
-          startTimer(60);
-        });
+        // scope.$on('chat-starts', function() {
+        //   startTimer(60);
+        // });
 
         scope.$on('chat-ended', function() {
-          counterStarted = false;
           cancelTick();
           console.log('chats over');
         });
 
         scope.$on('chat-started', function(ev, seconds) {
-          console.log(seconds);
-          startTimer(seconds);
+          startTimer(10);
+          console.log('chat-started');
         });
         // #45ccce
 
@@ -61,7 +60,6 @@
         }
 
         function startTimer(time) {
-          
           if (counterStarted) {
             scope.counter += time;  
             return;
@@ -88,21 +86,22 @@
           
           counterStarted = true;
           scope.counter--;  
-          // console.log(scope.counter);
+          console.log(scope.counter);
           changeColor();
           mytimeout = $timeout(onTimeout,1000);
-          if (scope.counter <= 0) {
-            cancelTick();
+          if (scope.counter <= 0) {            
             if (isPause) {
               sayCheese.takePic();
               resumeCounter();
+            } else {
+              $rootScope.$broadcast('chat-ended');
             }
           }
         }
 
         function cancelTick() {
           $timeout.cancel(mytimeout);
-          return;
+          counterStarted = false;
         }
 
 

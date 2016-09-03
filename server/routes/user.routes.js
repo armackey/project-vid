@@ -8,8 +8,13 @@ router.put('/getMatchInfo', userCtrl.getMatchInfo);
 router.put('/stats', userCtrl.stats);
 router.post('/login', userCtrl.login);
 
+
+// Preferences
 router.put('/showPrevPreferences', userCtrl.showPrevPreferences);
 router.post('/preferences', userCtrl.preferences);
-
+// Mobile ONLY
+router.put('/getSelectionList', userCtrl.getSelectionList);
+router.put('/updateSelection', userCtrl.updateSelection);
+router.post('/submitBirthday', userCtrl.submitBirthday);
 
 module.exports = router;

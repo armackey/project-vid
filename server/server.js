@@ -30,15 +30,20 @@ app.use(session({
 // app.use(passport.session());
 
 
+
 // require('./routes/fb.routes')(app, passport);
 // require('./config/passport')(passport);
-require('./sockets/socket')(io);
-require('./sockets/video-chat-sockets')(io);
-require('./sockets/messages-sockets')(io);
+app.use(require('./user/video-chat/routes'));
+require('./user/video-chat/sockets')(io);
 
-app.use(require('./routes/user.routes'));
+require('./sockets/socket')(io);
+
+require('./sockets/messages-sockets')(io); 
+
+
+app.use(require('./user/preferences/routes'));
 app.use(require('./routes/message.routes'));
-app.use(require('./routes/video.routes'));
+// app.use(require('./routes/video.routes'));
 
 // app.use(function (req, res, next) {
 //   // Website you wish to allow to connect

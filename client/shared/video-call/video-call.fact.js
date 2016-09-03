@@ -24,7 +24,7 @@
           token = authFact.getTokenLocalStorage();
           
           $http.put('/twilioToken', token).then(function(data) {
-            console.log(data);
+
             var accessManager = new Twilio.AccessManager(data.data.token);
             // Create a Conversations Client and connect to Twilio
             client = new Twilio.Conversations.Client(accessManager);
@@ -39,7 +39,6 @@
 
         randomMatch: function() {
           var deferred = $q.defer();
-          console.log(token);
           $http.put('/searchForMatch', token).then(function(user) {
             deferred.resolve(user.data);
           }, function(user) {
